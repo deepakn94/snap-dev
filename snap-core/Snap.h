@@ -17,7 +17,8 @@
 
 // graph data structures
 #include "graph.h"           // graphs
-#include "multimodalGraph.h" // multi-modal graphs
+#include "multimodalGraphImplA.h" // multi-modal graphs, impl A
+#include "multimodalGraphImplB.h" // multi-modal graphs, impl B
 #include "graphmp.h"         // graphs
 //#include "mmgraph.h"         // multimodal graphs
 #include "network.h"         // networks

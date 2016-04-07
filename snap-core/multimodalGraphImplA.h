@@ -46,7 +46,7 @@ public:
   int GetNodes() const { return Network.GetNodes(); }
   /// Adds a node of ID NId and ModeId MId to the multimodal graph.
   int AddNode(int NId, int ModeId);
-  /// Deletes node of ID NId from the graph. ##TUNGraph::DelNode
+  /// Deletes node of ID NId from the graph. ##TMultimodalGraphImplA::DelNode
   void DelNode(const int& NId) { Network.DelNode(NId); }
   /// Tests whether ID NId is a node.
   bool IsNode(const int& NId) const { return Network.IsNode(NId); }
@@ -61,9 +61,9 @@ public:
 
   /// Returns the number of edges in the graph.
   int GetEdges() const { return NEdges; }
-  /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TUNGraph::AddEdge
+  /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TMultimodalGraphImplA::AddEdge
   int AddEdge(const int& SrcNId, const int& DstNId) { return Network.AddEdge(SrcNId, DstNId); }
-  /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TUNGraph::DelEdge
+  /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TMultimodalGraphImplA::DelEdge
   void DelEdge(const int& SrcNId, const int& DstNId, const bool& IsDir) { Network.DelEdge(SrcNId, DstNId, IsDir); }
   /// Tests whether an edge between node IDs SrcNId and DstNId exists in the graph.
   bool IsEdge(const int& SrcNId, const int& DstNId, const bool& IsDir) const { return Network.IsEdge(SrcNId, DstNId, IsDir); }
@@ -71,7 +71,7 @@ public:
   TEdgeI BegEI() const { TNodeI NI = BegNI(); TEdgeI EI(NI, EndNI(), 0); if (GetNodes() != 0 && (NI.GetOutDeg()==0 || NI.GetId()>NI.GetOutNId(0))) { EI++; } return EI; }
   /// Returns an iterator referring to the past-the-end edge in the graph.
   TEdgeI EndEI() const { return TEdgeI(EndNI(), EndNI()); }
-  /// Returns an iterator referring to edge (SrcNId, DstNId) in the graph. ##TUNGraph::GetEI
+  /// Returns an iterator referring to edge (SrcNId, DstNId) in the graph. ##TMultimodalGraphImplA::GetEI
   TEdgeI GetEI(const int& SrcNId, const int& DstNId) const { return Network.GetEI(SrcNId, DstNId); }
 
   /// Returns an ID of a random node in the graph.
@@ -87,10 +87,10 @@ public:
   void Clr() { MxNId=0; NEdges=0; Network.Clr(); }
   /// Reserves memory for a graph of Nodes nodes and Edges edges.
   void Reserve(const int& Nodes, const int& Edges) { Network.Reserve(Nodes, Edges); }
-  /// Defragments the graph. ##TUNGraph::Defrag
+  /// Defragments the graph. ##TMultimodalGraphImplA::Defrag
   void Defrag(const bool& OnlyNodeLinks=false) { Network.Defrag(OnlyNodeLinks); }
-  /// Checks the graph data structure for internal consistency. ##TUNGraph::IsOk
+  /// Checks the graph data structure for internal consistency. ##TMultimodalGraphImplA::IsOk
   bool IsOk(const bool& ThrowExcept=true) const { return Network.IsOk(ThrowExcept); }
-  /// Returns a small graph on 5 nodes and 5 edges. ##TUNGraph::GetSmallGraph
+  /// Returns a small graph on 10 nodes and 10 edges with 2 modes. ##TMultimodalGraphImplA::GetSmallGraph
   static PMultimodalGraphImplA GetSmallGraph();
 };

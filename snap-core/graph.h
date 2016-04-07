@@ -319,6 +319,8 @@ public:
     int GetSrcNId() const { return CurNode.GetId(); }
     /// Returns the destination node of the edge.
     int GetDstNId() const { return CurNode.GetOutNId(CurEdge); }
+    /// Returns NodeN of current edge.
+    int GetCurEdge() const { return CurEdge; }
     friend class TNGraph;
   };
 private:

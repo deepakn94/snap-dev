@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////
-// Directed Node Graph
+// Multi-modal Graph, Impl A
 
 int TMultimodalGraphImplA::AddNode(int NId, int ModeId) {
   if (NId == -1) {
@@ -23,7 +23,7 @@ int TMultimodalGraphImplA::AddEdge(const int& SrcNId, const int& DstNId) {
 
 void TMultimodalGraphImplA::DelEdge(const int& SrcNId, const int& DstNId) {
   IAssertR(IsNode(SrcNId) && IsNode(DstNId), TStr::Fmt("%d or %d not a node.", SrcNId, DstNId).CStr());
-  if (!IsEdge(SrcNId, DstNId) {
+  if (!IsEdge(SrcNId, DstNId)) {
     return; // Edge doesn't exist
   }
   NEdges--;
