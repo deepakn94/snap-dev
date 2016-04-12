@@ -144,7 +144,6 @@ public:
   TMultimodalGraphImplC& operator = (const TMultimodalGraphImplC& Graph) {
     if (this!=&Graph) { MxNId=Graph.MxNId; NEdges=Graph.NEdges; NodeH=Graph.NodeH; } return *this; }
   
-  // TODO: Implement these
   /// Returns the number of nodes in the graph.
   int GetNodes() const;
   /// Adds a node of ID NId and ModeId MId to the multimodal graph.
@@ -162,21 +161,20 @@ public:
   /// Returns an ID that is larger than any node ID in the graph.
   int GetMxNId() const { return MxNId; }
 
-  // TODO: Implement these
   /// Returns the number of edges in the graph.
   int GetEdges() const { return NEdges; }
   /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TUNGraph::AddEdge
   int AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TUNGraph::DelEdge
-  void DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId, const bool& IsDir);
+  void DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Tests whether an edge between node IDs SrcNId and DstNId exists in the graph.
-  bool IsEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId, const bool& IsDir);
+  bool IsEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Returns an iterator referring to the first edge in the graph.
-  TEdgeI BegEI() const { TNodeI NI = BegNI(); TEdgeI EI(NI, EndNI(), 0); if (GetNodes() != 0 && (NI.GetOutDeg()==0 || NI.GetId()>NI.GetOutNId(0))) { EI++; } return EI; }
+  TEdgeI BegEI() const { TNodeI NI = BegNI(); TEdgeI EI(NI, EndNI(), 0); while (NI < EndNI() && (NI.GetOutDeg()==0)) { EI++; } return EI; }
   /// Returns an iterator referring to the past-the-end edge in the graph.
   TEdgeI EndEI() const { return TEdgeI(EndNI(), EndNI()); }
   /// Returns an iterator referring to edge (SrcNId, DstNId) in the graph. ##TUNGraph::GetEI
-  TEdgeI GetEI(const int& SrcNId, const int& DstNId) const;
+  TEdgeI GetEI(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) const;
 
   /// Returns an ID of a random node in the graph.
   int GetRndNId(TRnd& Rnd=TInt::Rnd);
