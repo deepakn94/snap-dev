@@ -4,10 +4,13 @@
 
 include ../Makefile.config
 
-all: testSnap
+all: testSnap testSnapMultimodal
 
 testSnap: testSnap.cpp Snap.o 
 	$(CC) $(CXXFLAGS) -o testSnap testSnap.cpp Snap.o -I$(CGLIB) $(LDFLAGS) $(LIBS)
+
+testSnapMultimodal: testSnapMultimodalGraphs.cpp Snap.o
+	$(CC) $(CXXFLAGS) -o testSnapMultimodal testSnapMultimodalGraphs.cpp Snap.o -I$(CGLIB) $(LDFLAGS) $(LIBS)
 
 Snap.o: *.h *.cpp ../glib-core/*.h ../glib-core/*.cpp
 	$(CC) -c $(CXXFLAGS) Snap.cpp -I$(CGLIB)

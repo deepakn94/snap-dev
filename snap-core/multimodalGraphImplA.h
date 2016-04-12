@@ -1,5 +1,3 @@
-#include "network.h"
-
 //#//////////////////////////////////////////////
 /// Multimodal graph: Implementation A
 /// Single graph with all nodes [with global ids], each node labelled
@@ -45,39 +43,40 @@ public:
   /// Returns the number of nodes in the graph.
   int GetNodes() const { return Network.GetNodes(); }
   /// Adds a node of ID NId and ModeId MId to the multimodal graph.
-  int AddNode(int NId, int ModeId);
+  int AddNode(const TPair<TInt,TInt>& NId);
   /// Deletes node of ID NId from the graph. ##TMultimodalGraphImplA::DelNode
-  void DelNode(const int& NId) { Network.DelNode(NId); }
+  void DelNode(const TPair<TInt,TInt>& NId) { Network.DelNode(NId.GetVal2()); }
   /// Tests whether ID NId is a node.
-  bool IsNode(const int& NId) const { return Network.IsNode(NId); }
+  bool IsNode(const TPair<TInt,TInt>& NId) const { return Network.IsNode(NId.GetVal2()); }
   /// Returns an iterator referring to the first node in the graph.
   TNodeI BegNI() const { return Network.BegNI(); }
   /// Returns an iterator referring to the past-the-end node in the graph.
   TNodeI EndNI() const { return Network.EndNI(); }
   /// Returns an iterator referring to the node of ID NId in the graph.
-  TNodeI GetNI(const int& NId) const { return Network.GetNI(NId); }
+  TNodeI GetNI(const TPair<TInt,TInt>& NId) const { return Network.GetNI(NId.GetVal2()); }
   /// Returns an ID that is larger than any node ID in the graph.
   int GetMxNId() const { return MxNId; }
 
   /// Returns the number of edges in the graph.
   int GetEdges() const { return NEdges; }
   /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TMultimodalGraphImplA::AddEdge
-  int AddEdge(const int& SrcNId, const int& DstNId) { return Network.AddEdge(SrcNId, DstNId); }
+  int AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TMultimodalGraphImplA::DelEdge
-  void DelEdge(const int& SrcNId, const int& DstNId, const bool& IsDir) { Network.DelEdge(SrcNId, DstNId, IsDir); }
+  void DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Tests whether an edge between node IDs SrcNId and DstNId exists in the graph.
-  bool IsEdge(const int& SrcNId, const int& DstNId, const bool& IsDir) const { return Network.IsEdge(SrcNId, DstNId, IsDir); }
+  bool IsEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) const { return Network.IsEdge(SrcNId.GetVal2(), DstNId.GetVal2()); }
   /// Returns an iterator referring to the first edge in the graph.
   TEdgeI BegEI() const { TNodeI NI = BegNI(); TEdgeI EI(NI, EndNI(), 0); if (GetNodes() != 0 && (NI.GetOutDeg()==0 || NI.GetId()>NI.GetOutNId(0))) { EI++; } return EI; }
   /// Returns an iterator referring to the past-the-end edge in the graph.
   TEdgeI EndEI() const { return TEdgeI(EndNI(), EndNI()); }
   /// Returns an iterator referring to edge (SrcNId, DstNId) in the graph. ##TMultimodalGraphImplA::GetEI
-  TEdgeI GetEI(const int& SrcNId, const int& DstNId) const { return Network.GetEI(SrcNId, DstNId); }
+  TEdgeI GetEI(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) const { return Network.GetEI(SrcNId.GetVal2(), DstNId.GetVal2()); }
 
   /// Returns an ID of a random node in the graph.
   int GetRndNId(TRnd& Rnd=TInt::Rnd) { return Network.GetRndNId(Rnd); }
-  /// Returns an interator referring to a random node in the graph.
-  TNodeI GetRndNI(TRnd& Rnd=TInt::Rnd) { return GetNI(GetRndNId(Rnd)); }
+  /// Returns an interator referring to a random node in the graph. Pass in a ModeId of -1
+  /// because we know ModeId isn't used in Node lookups.
+  TNodeI GetRndNI(TRnd& Rnd=TInt::Rnd) { return GetNI(TPair<TInt,TInt>(-1, GetRndNId(Rnd))); }
   /// Gets a vector IDs of all nodes in the graph.
   void GetNIdV(TIntV& NIdV) const { Network.GetNIdV(NIdV); }
 

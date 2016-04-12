@@ -17,11 +17,12 @@
 
 // graph data structures
 #include "graph.h"           // graphs
+#include "graphmp.h"         // graphs
+#include "network.h"         // networks
 #include "multimodalGraphImplA.h" // multi-modal graphs, impl A
 #include "multimodalGraphImplB.h" // multi-modal graphs, impl B
-#include "graphmp.h"         // graphs
+#include "multimodalGraphImplC.h" // multi-modal graphs, impl C
 //#include "mmgraph.h"         // multimodal graphs
-#include "network.h"         // networks
 #include "networkmp.h"       // networks OMP
 #include "bignet.h"          // large networks
 #include "timenet.h"         // time evolving networks

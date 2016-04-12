@@ -15,6 +15,9 @@
 // graph data structures
 #include "graph.cpp"         // graphs
 #include "graphmp.cpp"       // graphs
+#include "multimodalGraphImplA.cpp" // multi-modal graphs, impl A
+// #include "multimodalGraphImplB.cpp" // multi-modal graphs, impl B
+// #include "multimodalGraphImplC.cpp" // multi-modal graphs, impl C
 //#include "mmgraph.cpp"       // multimodal graphs
 #include "network.cpp"       // networks
 #include "networkmp.cpp"     // networks OMP
