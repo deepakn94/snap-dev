@@ -1,15 +1,10 @@
 /////////////////////////////////////////////////
 // Multi-modal Graph, Impl A
-int TMultimodalGraphImplA::AddNode(const TPair<TInt,TInt>& NId) {
-  int LocalNId = NId.GetVal1();
-  if (LocalNId < MxNId) {
-    LocalNId = MxNId;
-    MxNId++;
-  } else {
-    MxNId = LocalNId+1;
-  }
-  Network.AddNode(LocalNId, NId.GetVal1());
-  return LocalNId;
+TPair<TInt,TInt> TMultimodalGraphImplA::AddNode(const int ModeId) {
+  int LocalNId = MxNId;
+  MxNId++;
+  Network.AddNode(LocalNId, ModeId);
+  return TPair<TInt,TInt>(ModeId,LocalNId);
 }
 
 int TMultimodalGraphImplA::AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) {
@@ -33,22 +28,17 @@ void TMultimodalGraphImplA::DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<
 PMultimodalGraphImplA TMultimodalGraphImplA::GetSmallGraph() {
   PMultimodalGraphImplA G = TMultimodalGraphImplA::New();
   TVec<TPair< TInt,TInt> > Nodes = TVec< TPair<TInt,TInt> >();
-  for (int i = 0; i < 5; i++) {
-    TPair<TInt,TInt> Node = TPair<TInt,TInt>(0,i);
-    int LocalNId = G->AddNode(Node);
-    Nodes.Add(TPair<TInt,TInt>(Node.GetVal1(),LocalNId));
-  }
-  for (int i = 0; i < 5; i++) {
-    TPair<TInt,TInt> Node = TPair<TInt,TInt>(1,i);
-    int LocalNId = G->AddNode(Node);
-    Nodes.Add(TPair<TInt,TInt>(Node.GetVal1(),LocalNId));
-  }
+  for (int i = 0; i < 5; i++) { Nodes.Add(G->AddNode(0)); }
+  for (int i = 0; i < 5; i++) { Nodes.Add(G->AddNode(1)); }
   G->AddEdge(Nodes.GetVal(0),Nodes.GetVal(1)); G->AddEdge(Nodes.GetVal(1),Nodes.GetVal(2));
   G->AddEdge(Nodes.GetVal(0),Nodes.GetVal(2)); G->AddEdge(Nodes.GetVal(1),Nodes.GetVal(3));
   G->AddEdge(Nodes.GetVal(3),Nodes.GetVal(4)); G->AddEdge(Nodes.GetVal(2),Nodes.GetVal(3));
+  G->AddEdge(Nodes.GetVal(2),Nodes.GetVal(6)); G->AddEdge(Nodes.GetVal(4), Nodes.GetVal(8));
   G->AddEdge(Nodes.GetVal(5),Nodes.GetVal(6)); G->AddEdge(Nodes.GetVal(5),Nodes.GetVal(7));
   G->AddEdge(Nodes.GetVal(6),Nodes.GetVal(7)); G->AddEdge(Nodes.GetVal(6),Nodes.GetVal(9));
   G->AddEdge(Nodes.GetVal(6),Nodes.GetVal(8)); G->AddEdge(Nodes.GetVal(8),Nodes.GetVal(9));
+  G->AddEdge(Nodes.GetVal(9),Nodes.GetVal(2)); G->AddEdge(Nodes.GetVal(5),Nodes.GetVal(0));
+  G->DelNode(Nodes.GetVal(0));
   return G;
 }
 

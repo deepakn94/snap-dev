@@ -9,20 +9,14 @@ int TMultimodalGraphImplC::GetNodes() const {
   return NumNodes;
 }
 
-int TMultimodalGraphImplC::AddNode(TPair<TInt,TInt> NId) {
-  int LocalNId = NId.GetVal2();
-  int ModeId = NId.GetVal1();
-  if (NId.GetVal2() == -1) {
-    LocalNId = MxNId;  MxNId++;
-  } else {
-    IAssertR(!IsNode(NId), TStr::Fmt("NodeId (%d,%d) already exists", NId.GetVal1(), NId.GetVal2()));
-    MxNId = TMath::Mx(LocalNId+1, MxNId());
-  }
+TPair<TInt,TInt> TMultimodalGraphImplC::AddNode(int ModeId) {
+  int LocalNId = MxNId;
+  MxNId++;
   if (!NodeH.IsKey(ModeId)) {
     NodeH.AddDat(ModeId);
   }
-  NodeH[ModeId].AddDat(LocalNId,TNode(LocalNId));
-  return NId;
+  NodeH.GetDat(ModeId).AddDat(LocalNId,TNode(LocalNId));
+  return TPair<TInt,TInt>(ModeId,LocalNId);
 }
 
 void TMultimodalGraphImplC::DelNode(TPair<TInt,TInt> NId) {
@@ -30,21 +24,22 @@ void TMultimodalGraphImplC::DelNode(TPair<TInt,TInt> NId) {
   int ModeId = NId.GetVal1();
   IAssertR(IsNode(NId), TStr::Fmt("NodeId (%d,%d) doesn't exist", NId.GetVal1(), NId.GetVal2()));
 
-  TNode& Node = NodeH[ModeId][LocalNId];
+  TNode& Node = NodeH.GetDat(ModeId).GetDat(LocalNId);
   for (int e = 0; e < Node.GetOutDeg(); e++) {
     const TPair<TInt,TInt> nbr = Node.GetOutNId(e);
     if (nbr == NId) { continue; }
-    TNode& N = NodeH[nbr.GetVal1()][nbr.GetVal2()];
+    TNode& N = NodeH.GetDat(nbr.GetVal1()).GetDat(nbr.GetVal2());
     const int n = N.InNIdV.SearchBin(NId);
     if (n!= -1) { N.InNIdV.Del(n); NEdges--; }
   }
   for (int e = 0; e < Node.GetInDeg(); e++) {
     const TPair<TInt,TInt> nbr = Node.GetInNId(e);
     if (nbr == NId) { continue; }
-    TNode& N = NodeH[nbr.GetVal1()][nbr.GetVal2()];
+    TNode& N = NodeH.GetDat(nbr.GetVal1()).GetDat(nbr.GetVal2());
     const int n = N.OutNIdV.SearchBin(NId);
     if (n!= -1) { N.OutNIdV.Del(n); NEdges--; }
   }
+  NodeH.GetDat(ModeId).DelKey(LocalNId);
 }
 
 bool TMultimodalGraphImplC::IsNode(TPair<TInt,TInt> NId) {
@@ -53,18 +48,17 @@ bool TMultimodalGraphImplC::IsNode(TPair<TInt,TInt> NId) {
   if (!NodeH.IsKey(ModeId)) {
     return false;
   }
-  if (!NodeH[ModeId].IsKey(LocalNId)) {
+  if (!NodeH.GetDat(ModeId).IsKey(LocalNId)) {
     return false;
   }
   return true;
 }
 
-TNodeI TMultimodalGraphImplC::GetNI(const TPair<TInt,TInt>& NId) const {
-  IAssertR(IsNode(NId), TStr::Fmt("NodeId (%d,%d) doesn't exist", NId.GetVal1(), NId.GetVal2()));
+TMultimodalGraphImplC::TNodeI TMultimodalGraphImplC::GetNI(const TPair<TInt,TInt>& NId) const {
   int ModeId = NId.GetVal1();
   int LocalNId = NId.GetVal2();
 
-  return TNodeI(NodeH.GetI(ModeId), NodeH.EndI(), NodeH.GetDat(ModeId).GetI(NodeId), NodeH.GetDat(ModeId).EndI());
+  return TNodeI(NodeH.GetI(ModeId), NodeH.EndI(), NodeH.GetDat(ModeId).GetI(LocalNId));
 }
 
 int TMultimodalGraphImplC::AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) {
@@ -79,8 +73,8 @@ int TMultimodalGraphImplC::AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<T
   int DstModeId = DstNId.GetVal1();
   int DstLocalNId = DstNId.GetVal2();
 
-  NodeH[SrcModeId][SrcLocalNId].OutNIdV.AddSorted(DstNId);
-  NodeH[DstModeId][DstLocalNId].InNIdV.AddSorted(SrcNId);
+  NodeH.GetDat(SrcModeId).GetDat(SrcLocalNId).OutNIdV.AddSorted(DstNId);
+  NodeH.GetDat(DstModeId).GetDat(DstLocalNId).InNIdV.AddSorted(SrcNId);
   return -1;
 }
 
@@ -96,40 +90,38 @@ void TMultimodalGraphImplC::DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<
   int DstModeId = DstNId.GetVal1();
   int DstLocalNId = DstNId.GetVal2();
 
-  NodeH[SrcModeId][SrcLocalNId].OutNIdV.DelIfIn(DstNId);
-  NodeH[DstModeId][DstLocalNId].InNIdV.DelIfIn(SrcNId);
+  NodeH.GetDat(SrcModeId).GetDat(SrcLocalNId).OutNIdV.DelIfIn(DstNId);
+  NodeH.GetDat(DstModeId).GetDat(DstLocalNId).InNIdV.DelIfIn(SrcNId);
 }
 
 bool TMultimodalGraphImplC::IsEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) {
   if (! IsNode(SrcNId) || !IsNode(DstNId)) { return false; }
   int SrcModeId = SrcNId.GetVal1();
   int SrcLocalNId = SrcNId.GetVal2();
-  return NodeH[SrcModeId][SrcLocalNId].IsOutNId(DstNId);
+  return NodeH.GetDat(SrcModeId).GetDat(SrcLocalNId).IsOutNId(DstNId);
 }
 
-TEdgeI TMultimodalGraphImplC::GetEI(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) {
+TMultimodalGraphImplC::TEdgeI TMultimodalGraphImplC::GetEI(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) const {
   const TNodeI SrcNI = GetNI(SrcNId);
   const int NodeN = SrcNI.NodeNHI.GetDat().OutNIdV.SearchBin(DstNId);
   if (NodeN == -1) { return EndEI(); }
   return TEdgeI(SrcNI, EndNI(), NodeN);
 }
 
-PMultimodalGraphImplA TMultimodalGraphImplC::GetSmallGraph() {
-  PMultimodalGraphImplA G = TMultimodalGraphImplC::New();
-  for (int i = 0; i < 5; i++) { G->AddNode(TPair<TInt,TInt>(0,i)); }
-  for (int i = 0; i < 5; i++) { G->AddNode(TPair<TInt,TInt>(1,i)); }
-  G->AddEdge(TPair<TInt,TInt>(0,0),TPair<TInt,TInt>(0,1)); 
-  G->AddEdge(TPair<TInt,TInt>(0,1),TPair<TInt,TInt>(0,2));
-  G->AddEdge(TPair<TInt,TInt>(0,0),TPair<TInt,TInt>(0,2));
-  G->AddEdge(TPair<TInt,TInt>(0,1),TPair<TInt,TInt>(0,3));
-  G->AddEdge(TPair<TInt,TInt>(0,3),TPair<TInt,TInt>(0,4));
-  G->AddEdge(TPair<TInt,TInt>(0,2),TPair<TInt,TInt>(0,3));
-  G->AddEdge(TPair<TInt,TInt>(1,5),TPair<TInt,TInt>(1,6));
-  G->AddEdge(TPair<TInt,TInt>(1,5),TPair<TInt,TInt>(1,7));
-  G->AddEdge(TPair<TInt,TInt>(1,6),TPair<TInt,TInt>(1,7));
-  G->AddEdge(TPair<TInt,TInt>(1,6),TPair<TInt,TInt>(1,9));
-  G->AddEdge(TPair<TInt,TInt>(1,6),TPair<TInt,TInt>(1,8));
-  G->AddEdge(TPair<TInt,TInt>(1,8),TPair<TInt,TInt>(1,9));
+PMultimodalGraphImplC TMultimodalGraphImplC::GetSmallGraph() {
+  PMultimodalGraphImplC G = TMultimodalGraphImplC::New();
+  TVec< TPair<TInt,TInt> > Nodes = TVec< TPair<TInt,TInt> >();
+  for (int i = 0; i < 5; i++) { Nodes.Add(G->AddNode(0)); }
+  for (int i = 0; i < 5; i++) { Nodes.Add(G->AddNode(1)); }
+  G->AddEdge(Nodes.GetVal(0),Nodes.GetVal(1)); G->AddEdge(Nodes.GetVal(1),Nodes.GetVal(2));
+  G->AddEdge(Nodes.GetVal(0),Nodes.GetVal(2)); G->AddEdge(Nodes.GetVal(1),Nodes.GetVal(3));
+  G->AddEdge(Nodes.GetVal(3),Nodes.GetVal(4)); G->AddEdge(Nodes.GetVal(2),Nodes.GetVal(3));
+  G->AddEdge(Nodes.GetVal(2),Nodes.GetVal(6)); G->AddEdge(Nodes.GetVal(4), Nodes.GetVal(8));
+  G->AddEdge(Nodes.GetVal(5),Nodes.GetVal(6)); G->AddEdge(Nodes.GetVal(5),Nodes.GetVal(7));
+  G->AddEdge(Nodes.GetVal(6),Nodes.GetVal(7)); G->AddEdge(Nodes.GetVal(6),Nodes.GetVal(9));
+  G->AddEdge(Nodes.GetVal(6),Nodes.GetVal(8)); G->AddEdge(Nodes.GetVal(8),Nodes.GetVal(9));
+  G->AddEdge(Nodes.GetVal(9),Nodes.GetVal(2)); G->AddEdge(Nodes.GetVal(5),Nodes.GetVal(0));
+  G->DelNode(Nodes.GetVal(0));
   return G;
 }
 

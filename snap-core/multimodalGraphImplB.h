@@ -50,8 +50,10 @@ public:
     int GetDeg() const { return GetInDeg() + GetOutDeg(); }
     /// Returns in-degree of the current node.
     int GetInDeg() const;
+    int GetInDeg(const int &ModeId) const;
     /// Returns out-degree of the current node.
     int GetOutDeg() const;
+    int GetOutDeg(const int &ModeId) const;
     /// Sorts the adjacency lists of the current node.
     void SortNIdV();
     /// Returns ID of NodeN-th in-node (the node pointing to the current node) from a particular mode. ##TNGraph::TNodeI::GetInNId
@@ -161,37 +163,37 @@ public:
   /// Returns the number of nodes in the graph.
   int GetNodes() const { return NodeToModeMapping.Len(); }
   /// Adds a node of ID NId and ModeId MId to the multimodal graph.
-  int AddNode(int NId, int ModeId);
+  TPair<TInt,TInt> AddNode(int ModeId);
   /// Deletes node of ID NId from the graph. ##TMultimodalGraphImplB::DelNode
-  void DelNode(const int& NId);
+  void DelNode(const TPair<TInt,TInt>& NId);
   /// Tests whether ID NId is a node.
-  bool IsNode(const int& NId) const { return NodeToModeMapping.IsKey(NId); }
+  bool IsNode(const TPair<TInt,TInt>& NId) const { return NodeToModeMapping.IsKey(NId.GetVal2()); }
   /// Returns an iterator referring to the first node in the graph.
   TNodeI BegNI() const;
   /// Returns an iterator referring to the past-the-end node in the graph.
   TNodeI EndNI() const;
   /// Returns an iterator referring to the node of ID NId in the graph.
-  TNodeI GetNI(const int& NId) const;
+  TNodeI GetNI(const TPair<TInt,TInt>& NId) const;
   /// Returns an ID that is larger than any node ID in the graph.
   int GetMxNId() const { return MxNId; }
 
   /// Returns the number of edges in the graph.
   int GetEdges() const { return NEdges; }
   /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TMultimodalGraphImplB::AddEdge
-  int AddEdge(const int& SrcNId, const int& DstNId);
+  int AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TMultimodalGraphImplB::DelEdge
-  void DelEdge(const int& SrcNId, const int& DstNId, const bool& IsDir);
+  void DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Tests whether an edge between node IDs SrcNId and DstNId exists in the graph.
-  bool IsEdge(const int& SrcNId, const int& DstNId, const bool& IsDir) const;
+  bool IsEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) const;
   /// Returns an iterator referring to the first edge in the graph.
   TEdgeI BegEI() const { TNodeI NI = BegNI(); TEdgeI EI(NI, EndNI(), 0); while (NI<EndNI() && NI.GetOutDeg()==0) { EI++; } return EI; }
   /// Returns an iterator referring to the past-the-end edge in the graph.
   TEdgeI EndEI() const { return TEdgeI(EndNI(), EndNI()); }
   /// Returns an iterator referring to edge (SrcNId, DstNId) in the graph. ##TMultimodalGraphImplB::GetEI
-  TEdgeI GetEI(const int& SrcNId, const int& DstNId) const;
+  TEdgeI GetEI(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) const;
 
   /// Returns an ID of a random node in the graph.
-  int GetRndNId(TRnd& Rnd=TInt::Rnd) { return NodeToModeMapping.GetKey(NodeToModeMapping.GetRndKeyId(Rnd, 0.8)); }
+  TPair<TInt,TInt> GetRndNId(TRnd& Rnd=TInt::Rnd) { int NId = NodeToModeMapping.GetKey(NodeToModeMapping.GetRndKeyId(Rnd, 0.8)); return TPair<TInt,TInt>(NodeToModeMapping[NId], NId); }
   /// Returns an interator referring to a random node in the graph.
   TNodeI GetRndNI(TRnd& Rnd=TInt::Rnd) { return GetNI(GetRndNId(Rnd)); }
   /// Gets a vector IDs of all nodes in the graph.

@@ -84,6 +84,8 @@ public:
     TPair<TInt,TInt> GetOutNId(const int& NodeN) const { return NodeNHI.GetDat().GetOutNId(NodeN); }
     /// Returns ID of NodeN-th neighboring node. ##TMultimodalGraphImplC::TNodeI::GetNbrNId
     TPair<TInt,TInt> GetNbrNId(const int& NodeN) const { return NodeNHI.GetDat().GetNbrNId(NodeN); }
+    /// Returns ModeId of current node
+    int GetModeId() const { return NodeMHI.GetKey(); }
     /// Tests whether node with ID NId points to the current node.
     bool IsInNId(const TPair<TInt,TInt>& NId) const { return NodeNHI.GetDat().IsInNId(NId); }
     /// Tests whether the current node points to node with ID NId.
@@ -147,13 +149,13 @@ public:
   /// Returns the number of nodes in the graph.
   int GetNodes() const;
   /// Adds a node of ID NId and ModeId MId to the multimodal graph.
-  int AddNode(TPair<TInt,TInt> NId);
+  TPair<TInt,TInt> AddNode(int ModeId);
   /// Deletes node of ID NId from the graph. ##TUNGraph::DelNode
   void DelNode(TPair<TInt,TInt> NId);
   /// Tests whether ID NId is a node.
   bool IsNode(TPair<TInt,TInt> NId);
   /// Returns an iterator referring to the first node in the graph.
-  TNodeI BegNI() const { return TNodeI(NodeH.BegI(), NodeH.BegI()); }
+  TNodeI BegNI() const { return TNodeI(NodeH.BegI(), NodeH.EndI()); }
   /// Returns an iterator referring to the past-the-end node in the graph.
   TNodeI EndNI() const { return TNodeI(NodeH.EndI(), NodeH.EndI()); }
   /// Returns an iterator referring to the node of ID NId in the graph.
