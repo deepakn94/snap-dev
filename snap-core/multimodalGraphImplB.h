@@ -192,6 +192,9 @@ public:
   /// Returns an iterator referring to edge (SrcNId, DstNId) in the graph. ##TMultimodalGraphImplB::GetEI
   TEdgeI GetEI(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) const;
 
+  /// Transformation methods from multi-modal graph to regular, directed graph.
+  TIntNNet GetSubGraph(const TIntV ModeIds) const;
+
   /// Returns an ID of a random node in the graph.
   TPair<TInt,TInt> GetRndNId(TRnd& Rnd=TInt::Rnd) { int NId = NodeToModeMapping.GetKey(NodeToModeMapping.GetRndKeyId(Rnd, 0.8)); return TPair<TInt,TInt>(NodeToModeMapping[NId], NId); }
   /// Returns an interator referring to a random node in the graph.

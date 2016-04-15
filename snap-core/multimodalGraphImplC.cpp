@@ -108,6 +108,32 @@ TMultimodalGraphImplC::TEdgeI TMultimodalGraphImplC::GetEI(const TPair<TInt,TInt
   return TEdgeI(SrcNI, EndNI(), NodeN);
 }
 
+TIntNNet TMultimodalGraphImplC::GetSubGraph(const TIntV ModeIds) const {
+  TIntNNet SubGraph = TIntNNet();
+
+  for (int ModeIdx = 0; ModeIdx < ModeIds.Len(); ModeIdx++) {
+    int ModeId = ModeIds.GetVal(ModeIdx);
+    for (THash<TInt, TNode>::TIter NI=NodeH.GetDat(ModeId).BegI(); NI<NodeH.GetDat(ModeId).EndI(); NI++) {
+      int NId = NI.GetDat().GetId();
+      if (!SubGraph.IsNode(NId)) {
+        SubGraph.AddNode(NId, ModeId);
+      }
+      for (int e = 0; e < NI.GetDat().GetOutDeg(); e++) {
+        TPair<TInt,TInt> NeighboringNId = NI.GetDat().GetOutNId(e);
+        if (!ModeIds.IsIn(NeighboringNId.GetVal1())) {
+          continue;
+        }
+        if (!SubGraph.IsNode(NeighboringNId.GetVal2())) {
+          SubGraph.AddNode(NeighboringNId.GetVal2(), NeighboringNId.GetVal1());
+        }
+        SubGraph.AddEdge(NId, NeighboringNId.GetVal2());
+      }
+    }
+  }
+
+  return SubGraph;
+}
+
 PMultimodalGraphImplC TMultimodalGraphImplC::GetSmallGraph() {
   PMultimodalGraphImplC G = TMultimodalGraphImplC::New();
   TVec< TPair<TInt,TInt> > Nodes = TVec< TPair<TInt,TInt> >();
