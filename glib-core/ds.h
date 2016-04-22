@@ -589,6 +589,8 @@ public:
   void DelLast(){Del(Len()-1);}
   /// Removes the first occurrence of element \c Val.
   bool DelIfIn(const TVal& Val);
+  /// Removes one occurrence element \c Val, can be used only on sorted vectors.
+  bool DelIfInSorted(const TVal& Val);
   /// Removes all occurrences of element \c Val.
   void DelAll(const TVal& Val);
   /// Sets all elements of the vector to value \c Val.
@@ -1068,6 +1070,14 @@ template <class TVal, class TSizeTy>
 bool TVec<TVal, TSizeTy>::DelIfIn(const TVal& Val){
   AssertR(MxVals!=-1, "This vector was obtained from TVecPool. Such vectors cannot change its size!");
   TSizeTy ValN=SearchForw(Val);
+  if (ValN!=-1){Del(ValN); return true;}
+  else {return false;}
+}
+
+template <class TVal, class TSizeTy>
+bool TVec<TVal, TSizeTy>::DelIfInSorted(const TVal& Val){
+   AssertR(MxVals!=-1, "This vector was obtained from TVecPool. Such vectors cannot change its size!");
+  TSizeTy ValN=SearchBin(Val);
   if (ValN!=-1){Del(ValN); return true;}
   else {return false;}
 }

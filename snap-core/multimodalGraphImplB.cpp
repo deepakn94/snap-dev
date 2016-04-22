@@ -79,7 +79,10 @@ void TMultimodalGraphImplB::DelNode(const TPair<TInt,TInt>& NId) {
   for (TGraphs::TIter it = Graphs.BegI(); it < Graphs.EndI(); it++) {
     TPair<TInt, TInt> ModeIdPair = it.GetKey();
     if (ModeIdPair.GetVal1() == ModeId || ModeIdPair.GetVal2() == ModeId) {
-      it.GetDat().DelNode(NId.GetVal2());
+      TNGraph& Graph = it.GetDat();
+      if (Graph.IsNode(NId.GetVal2())) {
+        Graph.DelNode(NId.GetVal2());
+      }
     }
   }
   // Remove NId from NodeToModeMapping as well
@@ -195,25 +198,28 @@ bool TMultimodalGraphImplB::IsOk(const bool& ThrowExcept) const {
 TIntNNet TMultimodalGraphImplB::GetSubGraph(const TIntV ModeIds) const {
   TIntNNet SubGraph = TIntNNet();
 
+  for (THash<TInt,TInt>::TIter CurI = NodeToModeMapping.BegI(); CurI < NodeToModeMapping.EndI(); CurI++) {
+    if (ModeIds.IsIn(CurI.GetDat())) {
+      SubGraph.AddNode(CurI.GetKey(), CurI.GetDat());
+    }
+  }
+
   for (int ModeIdx1 = 0; ModeIdx1 < ModeIds.Len(); ModeIdx1++) {
     int ModeId1 = ModeIds.GetVal(ModeIdx1);
     for (int ModeIdx2 = 0; ModeIdx2 < ModeIds.Len(); ModeIdx2++) {
       int ModeId2 = ModeIds.GetVal(ModeIdx2);
       TPair<TInt,TInt> ModeIdsKey = GetModeIdsKey(ModeId1, ModeId2);
-      for (TNGraph::TNodeI it = Graphs.GetDat(ModeIdsKey).BegNI(); it < Graphs.GetDat(ModeIdsKey).EndNI(); it++) {
-        if (!SubGraph.IsNode(it.GetId())) {
-          SubGraph.AddNode(it.GetId(), NodeToModeMapping.GetDat(it.GetId()));
-        }
+      if (!Graphs.IsKey(ModeIdsKey)) { continue; }
+      const TNGraph& Graph = Graphs.GetDat(ModeIdsKey);
+      for (TNGraph::TNodeI it = Graph.BegNI(); it < Graph.EndNI(); it++) {
         for (int e = 0; e < it.GetOutDeg(); e++) {
-          int NeighboringNId = it.GetOutNId(e);
-          if (!SubGraph.IsNode(NeighboringNId)) {
-            SubGraph.AddNode(NeighboringNId, NodeToModeMapping.GetDat(NeighboringNId));
-          }
-          SubGraph.AddEdge(it.GetId(), NeighboringNId);
+          SubGraph.AddEdge(it.GetId(), it.GetOutNId(e));
         }
       }
     }
   }
+  printf("Total number of nodes in SubGraph is: %d...\n", SubGraph.GetNodes());
+  printf("Total number of edges in SubGraph is: %d...\n", SubGraph.GetEdges());
 
   return SubGraph;
 }

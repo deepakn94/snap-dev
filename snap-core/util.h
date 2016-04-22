@@ -75,9 +75,10 @@ public:
       // graph construction
       AllocateColumnCopies, CopyColumns, Sort, Group, MergeNeighborhoods, AddNeighborhoods, AddEdges, Sort2, ComputeOffset,
       // subgraph construction
-      ComputeETypes, EstimateSizes, InitGraph, ExtractNbrETypes, CopyNodes, PopulateGraph, ExtractEdges, BuildSubgraph} TExperiment;
+      ComputeETypes, EstimateSizes, InitGraph, ExtractNbrETypes, CopyNodes, PopulateGraph, ExtractEdges, BuildSubgraph,
+      RemoveEdges} TExperiment;
   /// The expected number of experiments (must be at least equal to the size of the above list)
-  static const int NEXPS = 25;
+  static const int NEXPS = 26;
 
   static TStopwatch* GetInstance() {
     static TStopwatch instance; // Guaranteed to be destroyed. Instantiated on first use.
@@ -100,6 +101,7 @@ private:
   double Sums[NEXPS];
   double Maxs[NEXPS];
   double Mins[NEXPS];
+  double Lasts[NEXPS];
 
 private:
   double Tick();
@@ -119,6 +121,8 @@ public:
   double Max(const TExperiment Exp) const;
   /// Returns the minimum time of all experiments
   double Min(const TExperiment Exp) const;
+  /// Returns the time of the most recent experiment
+  double Last(const TExperiment Exp) const;
 };
 
 //#//////////////////////////////////////////////

@@ -727,6 +727,7 @@ void TStopwatch::Stop(const TExperiment Exp) {
   Maxs[Exp] = Maxs[Exp] >= Duration ? Maxs[Exp] : Duration;
   Mins[Exp] = Mins[Exp] <= Duration ? Mins[Exp] : Duration;
   Cnts[Exp]++;
+  Lasts[Exp] = Duration;
 }
 
 int TStopwatch::Cnt(const TExperiment Exp) const {
@@ -747,6 +748,10 @@ double TStopwatch::Max(const TExperiment Exp) const {
 
 double TStopwatch::Min(const TExperiment Exp) const {
   return Mins[Exp];
+}
+
+double TStopwatch::Last(const TExperiment Exp) const {
+  return Lasts[Exp];
 }
 
 /////////////////////////////////////////////////

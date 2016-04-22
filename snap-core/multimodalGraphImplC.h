@@ -27,6 +27,14 @@ public:
     int GetDeg() const { return GetInDeg() + GetOutDeg(); }
     int GetInDeg() const { return InNIdV.Len(); }
     int GetOutDeg() const { return OutNIdV.Len(); }
+    int GetStartingIdx(int ModeId) const {
+      int StartingIdx; OutNIdV.SearchBin(TPair<TInt,TInt>(ModeId,-1), StartingIdx);
+      return StartingIdx;
+    }
+    int GetEndingIdx(int ModeId) const {
+      int EndingIdx; OutNIdV.SearchBin(TPair<TInt,TInt>(ModeId+1,-1), EndingIdx);
+      return EndingIdx;
+    }
     TPair<TInt,TInt> GetInNId(const int& NodeN) const { return InNIdV[NodeN]; }
     TPair<TInt,TInt> GetOutNId(const int& NodeN) const { return OutNIdV[NodeN]; }
     TPair<TInt,TInt> GetNbrNId(const int& NodeN) const { return NodeN<GetOutDeg()?GetOutNId(NodeN):GetInNId(NodeN-GetOutDeg()); }
