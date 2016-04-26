@@ -170,6 +170,8 @@ public:
   TNodeI GetNI(const TPair<TInt,TInt>& NId) const;
   /// Returns an ID that is larger than any node ID in the graph.
   int GetMxNId() const { return MxNId; }
+  /// Populates vector of Node Ids contained in the specific mode.
+  void GetNodeIdsInMode(const int ModeId, TVec< TPair<TInt,TInt> >& NodeIds) const;
 
   /// Returns the number of edges in the graph.
   int GetEdges() const { return NEdges; }

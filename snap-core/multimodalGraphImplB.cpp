@@ -87,7 +87,15 @@ void TMultimodalGraphImplB::DelNode(const TPair<TInt,TInt>& NId) {
   }
   // Remove NId from NodeToModeMapping as well
   NodeToModeMapping.DelKey(NId.GetVal2());
-} 
+}
+
+void TMultimodalGraphImplB::GetNodeIdsInMode(const int ModeId, TVec< TPair<TInt,TInt> >& NodeIds) const {
+  for (THash<TInt,TInt>::TIter NI=NodeToModeMapping.BegI(); NI<NodeToModeMapping.EndI(); NI++) {
+    if (NI.GetDat() == ModeId) {
+      NodeIds.Add(TPair<TInt,TInt>(NI.GetDat(), NI.GetKey()));
+    }
+  }
+}
 
 int TMultimodalGraphImplB::AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) {
   IAssertR(IsNode(SrcNId) && IsNode(DstNId), TStr::Fmt("%d or %d not a node.", SrcNId.GetVal2(), DstNId.GetVal2()).CStr());
@@ -218,8 +226,6 @@ TIntNNet TMultimodalGraphImplB::GetSubGraph(const TIntV ModeIds) const {
       }
     }
   }
-  printf("Total number of nodes in SubGraph is: %d...\n", SubGraph.GetNodes());
-  printf("Total number of edges in SubGraph is: %d...\n", SubGraph.GetEdges());
 
   return SubGraph;
 }

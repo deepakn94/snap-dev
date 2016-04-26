@@ -3,35 +3,46 @@
 #include "Snap.h"
 
 void CreateGraphMapping(THash<TStr, TInt>& nodeToModeMapping,
-                        TVec< TPair<TStr, TStr> >& edges,
+                        TVec< TPair<TStr,TStr> >& edges,
                         TVec<TStr>& verticesToBeDeleted,
-                        TVec< TPair<TStr, TStr> >& edgesToBeDeleted) {
+                        TVec< TPair<TStr,TStr> >& edgesToBeDeleted,
+                        TVec< TPair<TInt,TInt> >& verticesToBeChecked,
+                        TVec<TStr>& extraVerticesToBeChecked,
+                        TVec< TPair<TInt,TInt> >& edgesSrcVertexToBeChecked,
+                        TVec< TPair<TInt,TInt> >& edgesDstVertexToBeChecked,
+                        TVec<TInt>& extraEdgesToBeChecked) {
   THash<TStr, TInt> datasetIdToGraphIdMapping = THash<TStr, TInt>();
+  int numModes = 0;
 
   PSsParser parser = TSsParser::New("/dfs/ilfs2/0/multimodal/FlickrTables/photosNUS/photos.tsv", ssfTabSep);
   while (parser->Next()) {
-    nodeToModeMapping.AddDat(parser->GetFld(0), 0);
+    nodeToModeMapping.AddDat(parser->GetFld(0), numModes);
   }
+  numModes++;
 
   parser = TSsParser::New("/dfs/ilfs2/0/multimodal/FlickrTables/photosNUS/users.tsv", ssfTabSep);
   while (parser->Next()) {
-    nodeToModeMapping.AddDat(parser->GetFld(0), 1);
+    nodeToModeMapping.AddDat(parser->GetFld(0), numModes);
   }
+  numModes++;
 
   parser = TSsParser::New("/dfs/ilfs2/0/multimodal/FlickrTables/photosNUS/comments.tsv", ssfTabSep);
   while (parser->Next()) {
-    nodeToModeMapping.AddDat(parser->GetFld(0), 2);
+    nodeToModeMapping.AddDat(parser->GetFld(0), numModes);
   }
+  numModes++;
 
   parser = TSsParser::New("/dfs/ilfs2/0/multimodal/FlickrTables/photosNUS/locations.tsv", ssfTabSep);
   while (parser->Next()) {
-    nodeToModeMapping.AddDat(parser->GetFld(0), 3);
+    nodeToModeMapping.AddDat(parser->GetFld(0), numModes);
   }
+  numModes++;
 
   parser = TSsParser::New("/dfs/ilfs2/0/multimodal/FlickrTables/photosNUS/tags.tsv", ssfTabSep);
   while (parser->Next()) {
-    nodeToModeMapping.AddDat(parser->GetFld(0), 4);
+    nodeToModeMapping.AddDat(parser->GetFld(0), numModes);
   }
+  numModes++;
 
   parser = TSsParser::New("/dfs/ilfs2/0/multimodal/FlickrTables/photosNUS/photo_comment_edges.tsv", ssfTabSep);
   while (parser->Next()) {
@@ -76,6 +87,16 @@ void CreateGraphMapping(THash<TStr, TInt>& nodeToModeMapping,
     verticesToBeDeleted.Add(vertexToBeDeleted);
   }
 
+  for (int i = 0; i < 1000000; i++) {
+    TStr vertexToBeChecked = nodeToModeMapping.GetKey(nodeToModeMapping.GetRndKeyId(TInt::Rnd));
+    extraVerticesToBeChecked.Add(vertexToBeChecked);
+  }
+
+  for (int i = 0; i < 1000000; i++) {
+    TInt edgeIndexToBeChecked = TInt::Rnd.GetUniDevInt(edges.Len());
+    extraEdgesToBeChecked.Add(edgeIndexToBeChecked);
+  }
+
   for (int i = 0; i < 100000; i++) {
     TPair<TStr, TStr> edgeToBeDeleted = edges.GetRndVal();
     while (edgesToBeDeleted.IsIn(edgeToBeDeleted) ||
@@ -85,12 +106,26 @@ void CreateGraphMapping(THash<TStr, TInt>& nodeToModeMapping,
     }
     edgesToBeDeleted.Add(edgeToBeDeleted);
   }
+
+  for (int i = 0; i < 10000000; i++) {
+    verticesToBeChecked.Add(TPair<TInt,TInt>(TInt::Rnd.GetUniDevInt(numModes), TInt::Rnd.GetUniDevInt(100000000)));
+  }
+
+  for (int i = 0; i < 10000000; i++) {
+    edgesSrcVertexToBeChecked.Add(verticesToBeChecked.GetRndVal());
+    edgesDstVertexToBeChecked.Add(verticesToBeChecked.GetRndVal());
+  }
 }
 
 void testImplementationA(const THash<TStr,TInt>& nodeToModeMapping,
                          const TVec< TPair<TStr,TStr> >& edges,
                          const TVec<TStr>& verticesToBeDeleted,
-                         const TVec< TPair<TStr,TStr> >& edgesToBeDeleted) {
+                         const TVec< TPair<TStr,TStr> >& edgesToBeDeleted,
+                         const TVec< TPair<TInt,TInt> >& verticesToBeChecked,
+                         const TVec<TStr>& extraVerticesToBeChecked,
+                         const TVec< TPair<TInt,TInt> >& edgesSrcVertexToBeChecked,
+                         const TVec< TPair<TInt,TInt> >& edgesDstVertexToBeChecked,
+                         const TVec<TInt>& extraEdgesToBeChecked) {
   PMultimodalGraphImplA G = TMultimodalGraphImplA::New();
   printf("Creating graph, implementation A...\n");
   TStopwatch* sw = TStopwatch::GetInstance();
@@ -130,6 +165,44 @@ void testImplementationA(const THash<TStr,TInt>& nodeToModeMapping,
   sw->Stop(TStopwatch::BuildSubgraph);
   printf("Total time taken creating sub-graph between modes 0, 1 and 4: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
+  sw->Start(TStopwatch::EstimateSizes);
+  TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
+  G->GetNodeIdsInMode(0, PerModeNodeIds);
+  G->GetNodeIdsInMode(1, PerModeNodeIds);
+  G->GetNodeIdsInMode(3, PerModeNodeIds);
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken getting node ids in modes 0, 1 and 3: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < verticesToBeChecked.Len(); i++) {
+    G->IsNode(verticesToBeChecked.GetVal(i));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if nodes are not in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < extraVerticesToBeChecked.Len(); i++) {
+    G->IsNode(GraphIdToNodeIdMapping.GetDat(extraVerticesToBeChecked.GetVal(i)));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if nodes are in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < edgesSrcVertexToBeChecked.Len(); i++) {
+    G->IsEdge(edgesSrcVertexToBeChecked.GetVal(i), edgesDstVertexToBeChecked.GetVal(i));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if edges are not in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < extraEdgesToBeChecked.Len(); i++) {
+    TPair<TStr,TStr> edgeToBeChecked = edges.GetVal(extraEdgesToBeChecked.GetVal(i));
+    G->IsEdge(GraphIdToNodeIdMapping.GetDat(edgeToBeChecked.GetVal1()),
+              GraphIdToNodeIdMapping.GetDat(edgeToBeChecked.GetVal2()));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if edges are in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
   sw->Start(TStopwatch::RemoveEdges);
   for (TVec<TStr>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
     G->DelNode(GraphIdToNodeIdMapping.GetDat(*CurI));
@@ -145,7 +218,12 @@ void testImplementationA(const THash<TStr,TInt>& nodeToModeMapping,
 void testImplementationB(const THash<TStr,TInt>& nodeToModeMapping,
                          const TVec< TPair<TStr,TStr> >& edges,
                          const TVec<TStr>& verticesToBeDeleted,
-                         const TVec< TPair<TStr,TStr> >& edgesToBeDeleted) {
+                         const TVec< TPair<TStr,TStr> >& edgesToBeDeleted,
+                         const TVec< TPair<TInt,TInt> >& verticesToBeChecked,
+                         const TVec<TStr>& extraVerticesToBeChecked,
+                         const TVec< TPair<TInt,TInt> >& edgesSrcVertexToBeChecked,
+                         const TVec< TPair<TInt,TInt> >& edgesDstVertexToBeChecked,
+                         const TVec<TInt>& extraEdgesToBeChecked) {
   PMultimodalGraphImplB G = TMultimodalGraphImplB::New();
   printf("Creating graph, implementation B...\n");
   TStopwatch* sw = TStopwatch::GetInstance();
@@ -185,6 +263,44 @@ void testImplementationB(const THash<TStr,TInt>& nodeToModeMapping,
   sw->Stop(TStopwatch::BuildSubgraph);
   printf("Total time taken creating sub-graph between modes 0, 1 and 4: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
+  sw->Start(TStopwatch::EstimateSizes);
+  TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
+  G->GetNodeIdsInMode(0, PerModeNodeIds);
+  G->GetNodeIdsInMode(1, PerModeNodeIds);
+  G->GetNodeIdsInMode(3, PerModeNodeIds);
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken getting node ids in modes 0, 1 and 3: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < verticesToBeChecked.Len(); i++) {
+    G->IsNode(verticesToBeChecked.GetVal(i));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if nodes are not in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < extraVerticesToBeChecked.Len(); i++) {
+    G->IsNode(GraphIdToNodeIdMapping.GetDat(extraVerticesToBeChecked.GetVal(i)));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if nodes are in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < edgesSrcVertexToBeChecked.Len(); i++) {
+    G->IsEdge(edgesSrcVertexToBeChecked.GetVal(i), edgesDstVertexToBeChecked.GetVal(i));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if edges are not in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < extraEdgesToBeChecked.Len(); i++) {
+    TPair<TStr,TStr> edgeToBeChecked = edges.GetVal(extraEdgesToBeChecked.GetVal(i));
+    G->IsEdge(GraphIdToNodeIdMapping.GetDat(edgeToBeChecked.GetVal1()),
+              GraphIdToNodeIdMapping.GetDat(edgeToBeChecked.GetVal2()));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if edges are in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
   sw->Start(TStopwatch::RemoveEdges);
   for (TVec<TStr>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
     G->DelNode(GraphIdToNodeIdMapping.GetDat(*CurI));
@@ -200,7 +316,12 @@ void testImplementationB(const THash<TStr,TInt>& nodeToModeMapping,
 void testImplementationC(const THash<TStr,TInt>& nodeToModeMapping,
                          const TVec< TPair<TStr,TStr> >& edges,
                          const TVec<TStr>& verticesToBeDeleted,
-                         const TVec< TPair<TStr,TStr> >& edgesToBeDeleted) {
+                         const TVec< TPair<TStr,TStr> >& edgesToBeDeleted,
+                         const TVec< TPair<TInt,TInt> >& verticesToBeChecked,
+                         const TVec<TStr>& extraVerticesToBeChecked,
+                         const TVec< TPair<TInt,TInt> >& edgesSrcVertexToBeChecked,
+                         const TVec< TPair<TInt,TInt> >& edgesDstVertexToBeChecked,
+                         const TVec<TInt>& extraEdgesToBeChecked) {
   PMultimodalGraphImplC G = TMultimodalGraphImplC::New();
   printf("Creating graph, implementation C...\n");
   TStopwatch* sw = TStopwatch::GetInstance();
@@ -240,6 +361,44 @@ void testImplementationC(const THash<TStr,TInt>& nodeToModeMapping,
   sw->Stop(TStopwatch::BuildSubgraph);
   printf("Total time taken creating sub-graph between modes 0, 1 and 4: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
+  sw->Start(TStopwatch::EstimateSizes);
+  TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
+  G->GetNodeIdsInMode(0, PerModeNodeIds);
+  G->GetNodeIdsInMode(1, PerModeNodeIds);
+  G->GetNodeIdsInMode(3, PerModeNodeIds);
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken getting node ids in modes 0, 1 and 3: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < verticesToBeChecked.Len(); i++) {
+    G->IsNode(verticesToBeChecked.GetVal(i));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if nodes are not in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < extraVerticesToBeChecked.Len(); i++) {
+    G->IsNode(GraphIdToNodeIdMapping.GetDat(extraVerticesToBeChecked.GetVal(i)));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if nodes are in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < edgesSrcVertexToBeChecked.Len(); i++) {
+    G->IsEdge(edgesSrcVertexToBeChecked.GetVal(i), edgesDstVertexToBeChecked.GetVal(i));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if edges are not in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
+  sw->Start(TStopwatch::EstimateSizes);
+  for (int i = 0; i < extraEdgesToBeChecked.Len(); i++) {
+    TPair<TStr,TStr> edgeToBeChecked = edges.GetVal(extraEdgesToBeChecked.GetVal(i));
+    G->IsEdge(GraphIdToNodeIdMapping.GetDat(edgeToBeChecked.GetVal1()),
+              GraphIdToNodeIdMapping.GetDat(edgeToBeChecked.GetVal2()));
+  }
+  sw->Stop(TStopwatch::EstimateSizes);
+  printf("Total time taken determining if edges are in graph: %.2f seconds\n", sw->Last(TStopwatch::EstimateSizes));
+
   sw->Start(TStopwatch::RemoveEdges);
   for (TVec<TStr>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
     G->DelNode(GraphIdToNodeIdMapping.GetDat(*CurI));
@@ -257,11 +416,44 @@ int main(int argc, char* argv[]) {
   TVec< TPair<TStr,TStr> > edges = TVec< TPair<TStr,TStr> >();
   TVec<TStr> verticesToBeDeleted = TVec<TStr>();
   TVec< TPair<TStr,TStr> > edgesToBeDeleted = TVec< TPair<TStr,TStr> >();
-  CreateGraphMapping(nodeToModeMapping, edges, verticesToBeDeleted, edgesToBeDeleted);
+  TVec< TPair<TInt,TInt> > verticesToBeChecked = TVec< TPair<TInt,TInt> >();
+  TVec<TStr> extraVerticesToBeChecked = TVec<TStr>();
+  TVec< TPair<TInt,TInt> > edgesSrcVertexToBeChecked = TVec< TPair<TInt,TInt> >();
+  TVec< TPair<TInt,TInt> > edgesDstVertexToBeChecked = TVec< TPair<TInt,TInt> >();
+  TVec<TInt> extraEdgesToBeChecked = TVec<TInt>();
+  CreateGraphMapping(nodeToModeMapping, edges,
+                     verticesToBeDeleted,
+                     edgesToBeDeleted,
+                     verticesToBeChecked,
+                     extraVerticesToBeChecked,
+                     edgesSrcVertexToBeChecked,
+                     edgesDstVertexToBeChecked,
+                     extraEdgesToBeChecked);
 
-  testImplementationA(nodeToModeMapping, edges, verticesToBeDeleted, edgesToBeDeleted);
-  testImplementationB(nodeToModeMapping, edges, verticesToBeDeleted, edgesToBeDeleted);
-  testImplementationC(nodeToModeMapping, edges, verticesToBeDeleted, edgesToBeDeleted);
+  testImplementationA(nodeToModeMapping, edges,
+                      verticesToBeDeleted,
+                      edgesToBeDeleted,
+                      verticesToBeChecked,
+                      extraVerticesToBeChecked,
+                      edgesSrcVertexToBeChecked,
+                      edgesDstVertexToBeChecked,
+                      extraEdgesToBeChecked);
+  testImplementationB(nodeToModeMapping, edges,
+                      verticesToBeDeleted,
+                      edgesToBeDeleted,
+                      verticesToBeChecked,
+                      extraVerticesToBeChecked,
+                      edgesSrcVertexToBeChecked,
+                      edgesDstVertexToBeChecked,
+                      extraEdgesToBeChecked);
+  testImplementationC(nodeToModeMapping, edges,
+                      verticesToBeDeleted,
+                      edgesToBeDeleted,
+                      verticesToBeChecked,
+                      extraVerticesToBeChecked,
+                      edgesSrcVertexToBeChecked,
+                      edgesDstVertexToBeChecked,
+                      extraEdgesToBeChecked);
 
   return 0;
 }

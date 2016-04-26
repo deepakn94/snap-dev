@@ -55,8 +55,6 @@ TIntNNet TMultimodalGraphImplA::GetSubGraph(const TIntV ModeIds) const {
       SubGraph.AddEdge(NI.GetId(), NeighboringNId);
     }
   }
-  printf("Total number of nodes in SubGraph is: %d...\n", SubGraph.GetNodes());
-  printf("Total number of edges in SubGraph is: %d...\n", SubGraph.GetEdges());
 
   return SubGraph;
 }
