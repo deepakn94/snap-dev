@@ -119,6 +119,13 @@ int TMultimodalGraphImplB::AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<T
   return Graphs.GetDat(ModeIdsKey).AddEdge(SrcNId.GetVal2(), DstNId.GetVal2());
 }
 
+void TMultimodalGraphImplB::AddEdgeBatch(const TPair<TInt,TInt>& SrcNId, const TVec<TPair<TInt,TInt> >& DstNIds) {
+  IAssertR(IsNode(SrcNId), TStr::Fmt("%d not a node.", SrcNId.GetVal2()).CStr());
+  for (TVec<TPair<TInt,TInt> >::TIter DstNId = DstNIds.BegI(); DstNId < DstNIds.EndI(); DstNId++) {
+    AddEdge(SrcNId, *DstNId);
+  }
+}
+
 bool TMultimodalGraphImplB::IsEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) const {
   if (!IsNode(SrcNId) || !IsNode(DstNId)) return false;
 
@@ -137,7 +144,7 @@ void TMultimodalGraphImplB::DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<
   }
   NEdges--;
 
-  TPair<TInt,TInt> ModeIdsKey = GetModeIdsKey(SrcNId.GetVal2(), DstNId.GetVal2());
+  TPair<TInt,TInt> ModeIdsKey = GetModeIdsKey(SrcNId.GetVal1(), DstNId.GetVal1());
   Graphs.GetDat(ModeIdsKey).DelEdge(SrcNId.GetVal2(), DstNId.GetVal2());
 }
 
@@ -226,8 +233,37 @@ TIntNNet TMultimodalGraphImplB::GetSubGraph(const TIntV ModeIds) const {
       }
     }
   }
+  printf("Number of nodes in SubGraph: %d...\n", SubGraph.GetNodes());
+  printf("Number of edges in SubGraph: %d...\n", SubGraph.GetEdges());
 
   return SubGraph;
+}
+
+int TMultimodalGraphImplB::GetSubGraphMocked(const TIntV ModeIds) const {
+  int NumVerticesAndEdges = 0;
+
+  for (THash<TInt,TInt>::TIter CurI = NodeToModeMapping.BegI(); CurI < NodeToModeMapping.EndI(); CurI++) {
+    if (ModeIds.IsIn(CurI.GetDat())) {
+      NumVerticesAndEdges++;
+    }
+  }
+
+  for (int ModeIdx1 = 0; ModeIdx1 < ModeIds.Len(); ModeIdx1++) {
+    int ModeId1 = ModeIds.GetVal(ModeIdx1);
+    for (int ModeIdx2 = 0; ModeIdx2 < ModeIds.Len(); ModeIdx2++) {
+      int ModeId2 = ModeIds.GetVal(ModeIdx2);
+      TPair<TInt,TInt> ModeIdsKey = GetModeIdsKey(ModeId1, ModeId2);
+      if (!Graphs.IsKey(ModeIdsKey)) { continue; }
+      const TNGraph& Graph = Graphs.GetDat(ModeIdsKey);
+      for (TNGraph::TNodeI it = Graph.BegNI(); it < Graph.EndNI(); it++) {
+        for (int e = 0; e < it.GetOutDeg(); e++) {
+          NumVerticesAndEdges += it.GetOutNId(e);
+        }
+      }
+    }
+  }
+
+  return NumVerticesAndEdges;
 }
 
 PMultimodalGraphImplB TMultimodalGraphImplB::GetSmallGraph() {

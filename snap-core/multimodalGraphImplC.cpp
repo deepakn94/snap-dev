@@ -85,6 +85,14 @@ int TMultimodalGraphImplC::AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<T
   return -1;
 }
 
+void TMultimodalGraphImplC::AddEdgeBatch(const TPair<TInt,TInt>& SrcNId, const TVec<TPair<TInt,TInt> >& DstNIds) {
+  IAssertR(IsNode(SrcNId), TStr::Fmt("(%d,%d) not a node.", SrcNId.GetVal1(), SrcNId.GetVal2()).CStr());
+  ReserveOutNIdV(SrcNId, DstNIds.Len());
+  for (TVec<TPair<TInt,TInt> >::TIter DstNId = DstNIds.BegI(); DstNId < DstNIds.EndI(); DstNId++) {
+    AddEdge(SrcNId, *DstNId);
+  }
+}
+
 void TMultimodalGraphImplC::DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) {
   IAssertR(IsNode(SrcNId) && IsNode(DstNId), TStr::Fmt("(%d,%s) or (%d,%d) not a node.", SrcNId.GetVal1(), SrcNId.GetVal2(), DstNId.GetVal1(), DstNId.GetVal2()).CStr());
   if (!IsEdge(SrcNId, DstNId)) {
@@ -120,6 +128,7 @@ TIntNNet TMultimodalGraphImplC::GetSubGraph(const TIntV ModeIds) const {
 
   for (int ModeIdx = 0; ModeIdx < ModeIds.Len(); ModeIdx++) {
     int ModeId = ModeIds.GetVal(ModeIdx);
+    if (!NodeH.IsKey(ModeId)) { continue; }
     for (THash<TInt, TNode>::TIter NI=NodeH.GetDat(ModeId).BegI(); NI<NodeH.GetDat(ModeId).EndI(); NI++) {
       int NId = NI.GetDat().GetId();
       SubGraph.AddNode(NId, ModeId);
@@ -128,21 +137,48 @@ TIntNNet TMultimodalGraphImplC::GetSubGraph(const TIntV ModeIds) const {
 
   for (int ModeIdx = 0; ModeIdx < ModeIds.Len(); ModeIdx++) {
     int ModeId = ModeIds.GetVal(ModeIdx);
+    if (!NodeH.IsKey(ModeId)) { continue; }
     for (THash<TInt, TNode>::TIter NI=NodeH.GetDat(ModeId).BegI(); NI<NodeH.GetDat(ModeId).EndI(); NI++) {
       int NId = NI.GetDat().GetId();
-      for (int ModeIdx2 = 0; ModeIdx2 < ModeIds.Len(); ModeIdx2++) {
-        int ModeId2 = ModeIds.GetVal(ModeIdx2);
-        int startingE = NI.GetDat().GetStartingIdx(ModeId2);
-        int endingE = NI.GetDat().GetEndingIdx(ModeId2);
-        for (int e = startingE; e < endingE; e++) {
-          TPair<TInt,TInt> NeighboringNId = NI.GetDat().GetOutNId(e);
+      for (int e = 0; e < NI.GetDat().GetOutDeg(); e++) {
+        TPair<TInt,TInt> NeighboringNId = NI.GetDat().GetOutNId(e);
+        if (ModeIds.IsIn(NeighboringNId.GetVal1())) {
           SubGraph.AddEdge(NId, NeighboringNId.GetVal2());
         }
       }
     }
   }
+  printf("Number of nodes in SubGraph: %d...\n", SubGraph.GetNodes());
+  printf("Number of edges in SubGraph: %d...\n", SubGraph.GetEdges());
 
   return SubGraph;
+}
+
+int TMultimodalGraphImplC::GetSubGraphMocked(const TIntV ModeIds) const {
+  int NumVerticesAndEdges = 0;
+
+  for (int ModeIdx = 0; ModeIdx < ModeIds.Len(); ModeIdx++) {
+    int ModeId = ModeIds.GetVal(ModeIdx);
+    if (!NodeH.IsKey(ModeId)) { continue; }
+    for (THash<TInt, TNode>::TIter NI=NodeH.GetDat(ModeId).BegI(); NI<NodeH.GetDat(ModeId).EndI(); NI++) {
+      NumVerticesAndEdges++;
+    }
+  }
+
+  for (int ModeIdx = 0; ModeIdx < ModeIds.Len(); ModeIdx++) {
+    int ModeId = ModeIds.GetVal(ModeIdx);
+    if (!NodeH.IsKey(ModeId)) { continue; }
+    for (THash<TInt, TNode>::TIter NI=NodeH.GetDat(ModeId).BegI(); NI<NodeH.GetDat(ModeId).EndI(); NI++) {
+      for (int e = 0; e < NI.GetDat().GetOutDeg(); e++) {
+        TPair<TInt,TInt> NeighboringNId = NI.GetDat().GetOutNId(e);
+        if (ModeIds.IsIn(NeighboringNId.GetVal1())) {
+          NumVerticesAndEdges += NeighboringNId.GetVal2();
+        }
+      }
+    }
+  }
+
+  return NumVerticesAndEdges;
 }
 
 PMultimodalGraphImplC TMultimodalGraphImplC::GetSmallGraph() {

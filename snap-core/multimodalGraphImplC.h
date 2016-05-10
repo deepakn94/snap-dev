@@ -177,6 +177,7 @@ public:
   int GetEdges() const { return NEdges; }
   /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TUNGraph::AddEdge
   int AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
+  void AddEdgeBatch(const TPair<TInt,TInt>& SrcNId, const TVec<TPair<TInt,TInt> >& DstNIds);
   /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TUNGraph::DelEdge
   void DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Tests whether an edge between node IDs SrcNId and DstNId exists in the graph.
@@ -190,6 +191,7 @@ public:
 
   /// Transformation methods from multi-modal graph to regular, directed graph.
   TIntNNet GetSubGraph(const TIntV ModeIds) const;
+  int GetSubGraphMocked(const TIntV ModeIds) const;
 
   /// Returns an ID of a random node in the graph.
   int GetRndNId(TRnd& Rnd=TInt::Rnd);
@@ -204,6 +206,9 @@ public:
   void Clr();
   /// Reserves memory for a graph of Nodes nodes and Edges edges.
   void Reserve(const int& Nodes, const int& Edges);
+  void ReserveOutNIdV(const TPair<TInt,TInt>& NId, const int& Size) {
+    NodeH.GetDat(NId.GetVal1()).GetDat(NId.GetVal2()).OutNIdV.Reserve(Size);
+  }
   /// Defragments the graph. ##TUNGraph::Defrag
   void Defrag(const bool& OnlyNodeLinks=false);
   /// Checks the graph data structure for internal consistency. ##TUNGraph::IsOk

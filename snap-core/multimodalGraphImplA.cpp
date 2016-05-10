@@ -24,6 +24,14 @@ int TMultimodalGraphImplA::AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<T
   return Network.AddEdge(SrcNId.GetVal2(), DstNId.GetVal2());
 }
 
+void TMultimodalGraphImplA::AddEdgeBatch(const TPair<TInt,TInt>& SrcNId, const TVec<TPair<TInt,TInt> >& DstNIds) {
+  IAssertR(IsNode(SrcNId), TStr::Fmt("%d not a node.", SrcNId.GetVal2()).CStr());
+  Network.ReserveOutNIdV(SrcNId.GetVal2(), DstNIds.Len());
+  for (TVec<TPair<TInt,TInt> >::TIter DstNId = DstNIds.BegI(); DstNId < DstNIds.EndI(); DstNId++) {
+    AddEdge(SrcNId, *DstNId);
+  }
+}
+
 void TMultimodalGraphImplA::DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) {
   IAssertR(IsNode(SrcNId) && IsNode(DstNId), TStr::Fmt("%d or %d not a node.", SrcNId.GetVal2(), DstNId.GetVal2()).CStr());
   if (!IsEdge(SrcNId, DstNId)) {
@@ -55,8 +63,36 @@ TIntNNet TMultimodalGraphImplA::GetSubGraph(const TIntV ModeIds) const {
       SubGraph.AddEdge(NI.GetId(), NeighboringNId);
     }
   }
+  printf("Number of nodes in SubGraph: %d...\n", SubGraph.GetNodes());
+  printf("Number of edges in SubGraph: %d...\n", SubGraph.GetEdges());
 
   return SubGraph;
+}
+
+int TMultimodalGraphImplA::GetSubGraphMocked(const TIntV ModeIds) const {
+  int NumVerticesAndEdges = 0;
+
+  for (TIntNNet::TNodeI NI=BegNI(); NI<EndNI(); NI++) {
+    if (ModeIds.IsIn(NI.GetDat())) {
+      NumVerticesAndEdges++;
+    }
+  }
+
+  for (TIntNNet::TNodeI NI=BegNI(); NI<EndNI(); NI++) {
+    if (!ModeIds.IsIn(NI.GetDat())) {
+      continue;
+    }
+    for (int e = 0; e < NI.GetOutDeg(); e++) {
+      int NeighboringNId = NI.GetOutNId(e);
+      int NeighboringModeId = NI.GetOutNDat(e);
+      if (!ModeIds.IsIn(NeighboringModeId)) {
+        continue;
+      }
+      NumVerticesAndEdges += NeighboringNId;
+    }
+  }
+
+  return NumVerticesAndEdges;
 }
 
 PMultimodalGraphImplA TMultimodalGraphImplA::GetSmallGraph() {

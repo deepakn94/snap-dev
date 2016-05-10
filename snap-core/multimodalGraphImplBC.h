@@ -27,9 +27,15 @@ public:
     int GetDeg() const { return GetInDeg() + GetOutDeg(); }
     // TODO: Fix these
     int GetInDeg() const;
-    int GetInDeg(const int &ModeId) const { return InNIdV.GetDat(ModeId).Len(); }
+    int GetInDeg(const int &ModeId) const {
+      if (!InNIdV.IsKey(ModeId)) { return 0; }
+      return InNIdV.GetDat(ModeId).Len();
+    }
     int GetOutDeg() const;
-    int GetOutDeg(const int &ModeId) const { return OutNIdV.GetDat(ModeId).Len(); }
+    int GetOutDeg(const int &ModeId) const {
+      if (!OutNIdV.IsKey(ModeId)) { return 0; }
+      return OutNIdV.GetDat(ModeId).Len();
+    }
     TInt GetInNId(const int& NodeN, const int& ModeId) const {
       return InNIdV.GetDat(ModeId)[NodeN];
     }
@@ -223,6 +229,7 @@ public:
   int GetEdges() const { return NEdges; }
   /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TUNGraph::AddEdge
   int AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
+  void AddEdgeBatch(const TPair<TInt,TInt>& SrcNId, const TVec<TPair<TInt,TInt> >& DstNIds);
   /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TUNGraph::DelEdge
   void DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Tests whether an edge between node IDs SrcNId and DstNId exists in the graph.
@@ -236,6 +243,7 @@ public:
 
   /// Transformation methods from multi-modal graph to regular, directed graph.
   TIntNNet GetSubGraph(const TIntV ModeIds) const;
+  int GetSubGraphMocked(const TIntV ModeIds) const;
 
   /// Returns an ID of a random node in the graph.
   int GetRndNId(TRnd& Rnd=TInt::Rnd);

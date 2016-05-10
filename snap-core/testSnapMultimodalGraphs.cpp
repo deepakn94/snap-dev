@@ -87,5 +87,35 @@ int main(int argc, char* argv[]) {
   printf("Sub-graph composed purely of mode 1:\n");
   TIntNNet SubGraph32 = Graph3->GetSubGraph(Modes2); PrintSubGraphs(SubGraph32);
 
+  // create a graph, impl. BC
+  printf("Testing implementation BC...\n");
+  PMultimodalGraphImplBC Graph4 = TMultimodalGraphImplBC::GetSmallGraph();
+  // traverse nodes
+  for (TMultimodalGraphImplBC::TNodeI NI = Graph4->BegNI(); NI < Graph4->EndNI(); NI++) {
+    printf("NodeId: %d, InDegree: %d, OutDegree: %d\n", (int) NI.GetId().GetVal2(), NI.GetInDeg(), NI.GetOutDeg());
+    printf("OutNodes: ");
+    TIntV AdjacentModes = TIntV();
+    NI.GetAdjacentModes(AdjacentModes);
+    for (int ModeIdN = 0; ModeIdN < AdjacentModes.Len(); ModeIdN++) {
+      int ModeId = AdjacentModes.GetVal(ModeIdN);
+      for (int e = 0; e < NI.GetOutDeg(ModeId); e++) {
+        printf(" %d:%d", ModeId, (int) NI.GetOutNId(e, ModeId));
+      }
+    }
+    printf("\nInNodes: ");
+    for (int ModeIdN = 0; ModeIdN < AdjacentModes.Len(); ModeIdN++) {
+      int ModeId = AdjacentModes.GetVal(ModeIdN);
+      for (int e = 0; e < NI.GetInDeg(ModeId); e++) {
+        printf(" %d:%d", ModeId, (int) NI.GetInNId(e, ModeId));
+      }
+    }
+    printf("\n\n");
+  }
+
+  printf("Sub-graph composed purely of mode 0:\n");
+  TIntNNet SubGraph41 = Graph4->GetSubGraph(Modes1); PrintSubGraphs(SubGraph41);
+  printf("Sub-graph composed purely of mode 1:\n");
+  TIntNNet SubGraph42 = Graph4->GetSubGraph(Modes2); PrintSubGraphs(SubGraph42);
+
   return 0;
 }

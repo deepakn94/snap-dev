@@ -63,6 +63,7 @@ public:
   int GetEdges() const { return NEdges; }
   /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TMultimodalGraphImplA::AddEdge
   int AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
+  void AddEdgeBatch(const TPair<TInt,TInt>& SrcNId, const TVec<TPair<TInt,TInt> >& DstNIds);
   /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TMultimodalGraphImplA::DelEdge
   void DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Tests whether an edge between node IDs SrcNId and DstNId exists in the graph.
@@ -76,6 +77,7 @@ public:
 
   /// Transformation methods from multi-modal graph to regular, directed graph.
   TIntNNet GetSubGraph(const TIntV ModeIds) const;
+  int GetSubGraphMocked(const TIntV ModeIds) const;
 
   /// Returns an ID of a random node in the graph.
   int GetRndNId(TRnd& Rnd=TInt::Rnd) { return Network.GetRndNId(Rnd); }

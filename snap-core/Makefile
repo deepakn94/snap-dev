@@ -4,7 +4,7 @@
 
 include ../Makefile.config
 
-all: testSnap testSnapMultimodal benchmarkSnapMultimodal
+all: testSnap testSnapMultimodal benchmarkSnapMultimodal benchmarkSnapMultimodalSynthetic
 
 testSnap: testSnap.cpp Snap.o 
 	$(CC) $(CXXFLAGS) -o testSnap testSnap.cpp Snap.o -I$(CGLIB) $(LDFLAGS) $(LIBS)
@@ -14,6 +14,9 @@ testSnapMultimodal: testSnapMultimodalGraphs.cpp Snap.o
 
 benchmarkSnapMultimodal: benchmarkMultimodalGraphs.cpp Snap.o
 	$(CC) $(CXXFLAGS) -o benchmarkSnapMultimodal benchmarkMultimodalGraphs.cpp Snap.o -I$(CGLIB) $(LDFLAGS) $(LIBS)
+
+benchmarkSnapMultimodalSynthetic: benchmarkMultimodalGraphsSynthetic.cpp Snap.o
+	$(CC) $(CXXFLAGS) -o benchmarkSnapMultimodalSynthetic benchmarkMultimodalGraphsSynthetic.cpp Snap.o -I$(CGLIB) $(LDFLAGS) $(LIBS)
 
 Snap.o: *.h *.cpp ../glib-core/*.h ../glib-core/*.cpp
 	$(CC) -c $(CXXFLAGS) Snap.cpp -I$(CGLIB)

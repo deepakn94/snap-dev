@@ -215,6 +215,7 @@ public:
     MxNId = 0;  NodeH.Clr(DoDel, -1, ResetDat); }
   /// Reserves memory for a network of Nodes nodes and Edges edges.
   void Reserve(const int& Nodes, const int& Edges) { if (Nodes>0) { NodeH.Gen(Nodes/2); } }
+  void ReserveOutNIdV(const int& NId, const int& Size) { NodeH.GetDat(NId).OutNIdV.Reserve(Size); }
   /// Sorts nodes by node IDs.
   void SortNIdById(const bool& Asc=true) { NodeH.SortByKey(Asc); }
   /// Sorts nodes by node data.
