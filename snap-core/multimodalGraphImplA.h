@@ -44,6 +44,7 @@ public:
   int GetNodes() const { return Network.GetNodes(); }
   /// Adds a node of ID NId and ModeId MId to the multimodal graph.
   TPair<TInt,TInt> AddNode(const int ModeId);
+  void AddNode(const TPair<TInt,TInt>& NodeId);
   /// Deletes node of ID NId from the graph. ##TMultimodalGraphImplA::DelNode
   void DelNode(const TPair<TInt,TInt>& NId) { Network.DelNode(NId.GetVal2()); }
   /// Tests whether ID NId is a node.

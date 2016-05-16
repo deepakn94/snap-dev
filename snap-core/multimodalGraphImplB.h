@@ -164,6 +164,7 @@ public:
   int GetNodes() const { return NodeToModeMapping.Len(); }
   /// Adds a node of ID NId and ModeId MId to the multimodal graph.
   TPair<TInt,TInt> AddNode(int ModeId);
+  void AddNode(const TPair<TInt,TInt>& NodeId);
   /// Deletes node of ID NId from the graph. ##TMultimodalGraphImplB::DelNode
   void DelNode(const TPair<TInt,TInt>& NId);
   /// Tests whether ID NId is a node.

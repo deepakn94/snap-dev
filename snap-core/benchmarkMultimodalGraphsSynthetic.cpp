@@ -14,7 +14,7 @@ void CreateGraphMapping(THash<TInt, TInt>& nodeToModeMapping,
   int numModes = 10;
   int numNodesPerMode = 1000000;
   int numNodes = numNodesPerMode * numModes;
-  int numEdges = 0;
+  long int numEdges = 0;
 
   for (int i = 0; i < numNodesPerMode; i++) {
     for (int j = 0; j < numModes; j++) {
@@ -33,7 +33,7 @@ void CreateGraphMapping(THash<TInt, TInt>& nodeToModeMapping,
   }
 
   printf("Total number of nodes: %d...\n", numNodes);
-  printf("Total number of edges: %d...\n", numEdges);
+  printf("Total number of edges: %ld...\n", numEdges);
 
   int numNodesToBeDeleted = 0.3 * numNodes;
   printf("Number of nodes to be deleted: %d...\n", numNodesToBeDeleted);
@@ -56,7 +56,7 @@ void CreateGraphMapping(THash<TInt, TInt>& nodeToModeMapping,
     extraEdgesToBeChecked.Add(TPair<TInt,TInt>(srcVertex,dstVertexIndex));
   }
 
-  int numEdgesToBeDeleted = 0.00001 * numEdges;
+  int numEdgesToBeDeleted = (numEdges / 100000);
   printf("Number of edges to be deleted: %d...\n", numEdgesToBeDeleted);
   for (int i = 0; i < numEdgesToBeDeleted; i++) {
     TInt srcVertex = edges.GetKey(edges.GetRndKeyId(TInt::Rnd));
@@ -120,9 +120,6 @@ void testImplementationA(const THash<TInt,TInt>& nodeToModeMapping,
   totalLoadTime += sw->Last(TStopwatch::LoadTables);
   printf("Total time taken creating graph: %.2f seconds\n", totalLoadTime);
 
-  printf("Total number of nodes: %d...\n", G->GetNodes());
-  printf("Total number of edges: %d...\n", G->GetEdges());
-
   TIntV Modes1 = TIntV(); Modes1.Add(0); Modes1.Add(1);
   TIntV Modes2 = TIntV(); Modes2.Add(0); Modes2.Add(5);
   TIntV Modes3 = TIntV(); Modes3.Add(0); Modes3.Add(1); Modes3.Add(2);
@@ -209,7 +206,18 @@ void testImplementationA(const THash<TInt,TInt>& nodeToModeMapping,
     G->DelEdge(GraphIdToNodeIdMapping.GetDat(CurI->GetVal1()), GraphIdToNodeIdMapping.GetDat(CurI->GetVal2()));
   }
   sw->Stop(TStopwatch::RemoveEdges);
-  printf("Total time taken removing edges: %.2f seconds\n\n", sw->Last(TStopwatch::RemoveEdges));
+  printf("Total time taken removing edges: %.2f seconds\n", sw->Last(TStopwatch::RemoveEdges));
+
+  sw->Start(TStopwatch::AddEdges);
+  for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
+    G->AddNode(GraphIdToNodeIdMapping.GetDat(*CurI));
+  }
+
+  for (TVec< TPair<TInt,TInt> >::TIter CurI = edgesToBeDeleted.BegI(); CurI < edgesToBeDeleted.EndI(); CurI++) {
+    G->AddEdge(GraphIdToNodeIdMapping.GetDat(CurI->GetVal1()), GraphIdToNodeIdMapping.GetDat(CurI->GetVal2()));
+  }
+  sw->Stop(TStopwatch::AddEdges);
+  printf("Total time taken re-adding edges: %.2f seconds\n\n", sw->Last(TStopwatch::AddEdges));
 }
 
 void testImplementationB(const THash<TInt,TInt>& nodeToModeMapping,
@@ -250,9 +258,6 @@ void testImplementationB(const THash<TInt,TInt>& nodeToModeMapping,
   totalLoadTime += sw->Last(TStopwatch::LoadTables);
   printf("Total time taken creating graph: %.2f seconds\n", totalLoadTime);
 
-  printf("Total number of nodes: %d...\n", G->GetNodes());
-  printf("Total number of edges: %d...\n", G->GetEdges());
-
   TIntV Modes1 = TIntV(); Modes1.Add(0); Modes1.Add(1);
   TIntV Modes2 = TIntV(); Modes2.Add(0); Modes2.Add(5);
   TIntV Modes3 = TIntV(); Modes3.Add(0); Modes3.Add(1); Modes3.Add(2);
@@ -340,6 +345,17 @@ void testImplementationB(const THash<TInt,TInt>& nodeToModeMapping,
   }
   sw->Stop(TStopwatch::RemoveEdges);
   printf("Total time taken removing edges: %.2f seconds\n\n", sw->Last(TStopwatch::RemoveEdges));
+
+  sw->Start(TStopwatch::AddEdges);
+  for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
+    G->AddNode(GraphIdToNodeIdMapping.GetDat(*CurI));
+  }
+
+  for (TVec< TPair<TInt,TInt> >::TIter CurI = edgesToBeDeleted.BegI(); CurI < edgesToBeDeleted.EndI(); CurI++) {
+    G->AddEdge(GraphIdToNodeIdMapping.GetDat(CurI->GetVal1()), GraphIdToNodeIdMapping.GetDat(CurI->GetVal2()));
+  }
+  sw->Stop(TStopwatch::AddEdges);
+  printf("Total time taken re-adding edges: %.2f seconds\n\n", sw->Last(TStopwatch::AddEdges));
 }
 
 void testImplementationC(const THash<TInt,TInt>& nodeToModeMapping,
@@ -380,9 +396,6 @@ void testImplementationC(const THash<TInt,TInt>& nodeToModeMapping,
   totalLoadTime += sw->Last(TStopwatch::LoadTables);
   printf("Total time taken creating graph: %.2f seconds\n", totalLoadTime);
 
-  printf("Total number of nodes: %d...\n", G->GetNodes());
-  printf("Total number of edges: %d...\n", G->GetEdges());
-
   TIntV Modes1 = TIntV(); Modes1.Add(0); Modes1.Add(1);
   TIntV Modes2 = TIntV(); Modes2.Add(0); Modes2.Add(5);
   TIntV Modes3 = TIntV(); Modes3.Add(0); Modes3.Add(1); Modes3.Add(2);
@@ -470,6 +483,17 @@ void testImplementationC(const THash<TInt,TInt>& nodeToModeMapping,
   }
   sw->Stop(TStopwatch::RemoveEdges);
   printf("Total time taken removing edges: %.2f seconds\n\n", sw->Last(TStopwatch::RemoveEdges));
+
+  sw->Start(TStopwatch::AddEdges);
+  for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
+    G->AddNode(GraphIdToNodeIdMapping.GetDat(*CurI));
+  }
+
+  for (TVec< TPair<TInt,TInt> >::TIter CurI = edgesToBeDeleted.BegI(); CurI < edgesToBeDeleted.EndI(); CurI++) {
+    G->AddEdge(GraphIdToNodeIdMapping.GetDat(CurI->GetVal1()), GraphIdToNodeIdMapping.GetDat(CurI->GetVal2()));
+  }
+  sw->Stop(TStopwatch::AddEdges);
+  printf("Total time taken re-adding edges: %.2f seconds\n\n", sw->Last(TStopwatch::AddEdges));
 }
 
 void testImplementationBC(const THash<TInt,TInt>& nodeToModeMapping,
@@ -597,6 +621,17 @@ void testImplementationBC(const THash<TInt,TInt>& nodeToModeMapping,
   }
   sw->Stop(TStopwatch::RemoveEdges);
   printf("Total time taken removing edges: %.2f seconds\n\n", sw->Last(TStopwatch::RemoveEdges));
+
+  sw->Start(TStopwatch::AddEdges);
+  for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
+    G->AddNode(GraphIdToNodeIdMapping.GetDat(*CurI));
+  }
+
+  for (TVec< TPair<TInt,TInt> >::TIter CurI = edgesToBeDeleted.BegI(); CurI < edgesToBeDeleted.EndI(); CurI++) {
+    G->AddEdge(GraphIdToNodeIdMapping.GetDat(CurI->GetVal1()), GraphIdToNodeIdMapping.GetDat(CurI->GetVal2()));
+  }
+  sw->Stop(TStopwatch::AddEdges);
+  printf("Total time taken re-adding edges: %.2f seconds\n\n", sw->Last(TStopwatch::AddEdges));
 }
 
 int main(int argc, char* argv[]) {

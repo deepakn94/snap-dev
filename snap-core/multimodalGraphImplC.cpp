@@ -19,6 +19,14 @@ TPair<TInt,TInt> TMultimodalGraphImplC::AddNode(int ModeId) {
   return TPair<TInt,TInt>(ModeId,LocalNId);
 }
 
+void TMultimodalGraphImplC::AddNode(const TPair<TInt,TInt>& NodeId) {
+  int ModeId = NodeId.GetVal1(); int LocalNId = NodeId.GetVal2();
+  if (!NodeH.IsKey(ModeId)) {
+    NodeH.AddDat(ModeId);
+  }
+  NodeH.GetDat(ModeId).AddDat(LocalNId,TNode(LocalNId));
+}
+
 void TMultimodalGraphImplC::DelNode(TPair<TInt,TInt> NId) {
   int LocalNId = NId.GetVal2();
   int ModeId = NId.GetVal1();

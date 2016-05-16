@@ -72,6 +72,10 @@ TPair<TInt,TInt> TMultimodalGraphImplB::AddNode(int ModeId) {
   return TPair<TInt,TInt>(ModeId,LocalNId);
 }
 
+void TMultimodalGraphImplB::AddNode(const TPair<TInt,TInt>& NodeId) {
+  NodeToModeMapping.AddDat(NodeId.GetVal2(), NodeId.GetVal1());
+}
+
 void TMultimodalGraphImplB::DelNode(const TPair<TInt,TInt>& NId) {
   IAssertR(IsNode(NId), TStr::Fmt("NodeId %d does not exist", NId.GetVal2()));
   int ModeId = NId.GetVal1();

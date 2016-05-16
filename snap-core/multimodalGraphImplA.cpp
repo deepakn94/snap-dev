@@ -7,6 +7,10 @@ TPair<TInt,TInt> TMultimodalGraphImplA::AddNode(const int ModeId) {
   return TPair<TInt,TInt>(ModeId,LocalNId);
 }
 
+void TMultimodalGraphImplA::AddNode(const TPair<TInt,TInt>& NodeId) {
+  Network.AddNode(NodeId.GetVal2(), NodeId.GetVal1());
+}
+
 void TMultimodalGraphImplA::GetNodeIdsInMode(const int ModeId, TVec< TPair<TInt,TInt> >& NodeIds) const {
   for (TIntNNet::TNodeI NI=BegNI(); NI<EndNI(); NI++) {
     if (NI.GetDat() == ModeId) {
