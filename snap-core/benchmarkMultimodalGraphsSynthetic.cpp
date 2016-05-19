@@ -12,7 +12,7 @@ void CreateGraphMapping(THash<TInt, TInt>& nodeToModeMapping,
                         TVec< TPair<TInt,TInt> >& edgesDstVertexToBeChecked,
                         TVec< TPair<TInt,TInt> >& extraEdgesToBeChecked) {
   int numModes = 10;
-  int numNodesPerMode = 1000000;
+  int numNodesPerMode = 10000;
   int numNodes = numNodesPerMode * numModes;
   long int numEdges = 0;
 
@@ -22,20 +22,29 @@ void CreateGraphMapping(THash<TInt, TInt>& nodeToModeMapping,
     }
   }
 
+  /* int numAdditionalNodes = 1000;
+  for (int i = 0; i < numAdditionalNodes; i++) {
+    nodeToModeMapping.AddDat(numNodes+i, numModes);
+  } */
+
   for (int i = 0; i < numNodes; i++) {
     edges.AddDat(i);
-    if (i % 10000 != 0) { edges.GetDat(i).Add((i+5) % numNodes); numEdges++; continue; }
-    int numEdgesPerNode = 1000000;
-    for (int j = 0; j < numEdgesPerNode; j++) {
+    // if (i % 10000 != 0) { edges.GetDat(i).Add((i+5) % numNodes); numEdges++; continue; }
+    int numEdgesPerNode = 10;
+    for (int j = 1; j <= numEdgesPerNode; j++) {
       edges.GetDat(i).Add((i+(j*(numNodes / numEdgesPerNode))) % numNodes);
       numEdges++;
     }
+    /* for (int j = 0; j < numAdditionalNodes; j++) {
+      edges.GetDat(i).Add(numNodes+j);
+      numEdges++;
+    } */
   }
 
   printf("Total number of nodes: %d...\n", numNodes);
   printf("Total number of edges: %ld...\n", numEdges);
 
-  int numNodesToBeDeleted = 0.3 * numNodes;
+  int numNodesToBeDeleted = 10000;
   printf("Number of nodes to be deleted: %d...\n", numNodesToBeDeleted);
   for (int i = 0; i < numNodesToBeDeleted; i++) {
     TInt vertexToBeDeleted = nodeToModeMapping.GetKey(nodeToModeMapping.GetRndKeyId(TInt::Rnd));
@@ -56,7 +65,7 @@ void CreateGraphMapping(THash<TInt, TInt>& nodeToModeMapping,
     extraEdgesToBeChecked.Add(TPair<TInt,TInt>(srcVertex,dstVertexIndex));
   }
 
-  int numEdgesToBeDeleted = (numEdges / 100000);
+  int numEdgesToBeDeleted = 0;
   printf("Number of edges to be deleted: %d...\n", numEdgesToBeDeleted);
   for (int i = 0; i < numEdgesToBeDeleted; i++) {
     TInt srcVertex = edges.GetKey(edges.GetRndKeyId(TInt::Rnd));
@@ -112,6 +121,11 @@ void testImplementationA(const THash<TInt,TInt>& nodeToModeMapping,
     }
   }
 
+  TVec< TPair<TInt,TInt> > startingVertices = TVec< TPair<TInt,TInt> >();
+  for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
+    startingVertices.Add(GraphIdToNodeIdMapping.GetDat(*CurI));
+  }
+
   sw->Start(TStopwatch::LoadTables);
   for (THash<TInt,TVec<TPair<TInt,TInt> > >::TIter CurI = edgesProcessed.BegI(); CurI < edgesProcessed.EndI(); CurI++) {
     G->AddEdgeBatch(GraphIdToNodeIdMapping.GetDat(CurI.GetKey()), CurI.GetDat());
@@ -125,7 +139,7 @@ void testImplementationA(const THash<TInt,TInt>& nodeToModeMapping,
   TIntV Modes3 = TIntV(); Modes3.Add(0); Modes3.Add(1); Modes3.Add(2);
   TIntV Modes4 = TIntV(); Modes4.Add(5);
   TIntV Modes5 = TIntV(); Modes5.Add(0); Modes5.Add(1); Modes5.Add(4);
-  TIntV Modes6 = TIntV(); for (int i = 0; i < 38; i++) { Modes6.Add(i); }
+  TIntV Modes6 = TIntV(); for (int i = 0; i < 10; i++) { Modes6.Add(i); }
 
   sw->Start(TStopwatch::BuildSubgraph);
   G->GetSubGraphMocked(Modes1);
@@ -155,7 +169,12 @@ void testImplementationA(const THash<TInt,TInt>& nodeToModeMapping,
   sw->Start(TStopwatch::BuildSubgraph);
   G->GetSubGraphMocked(Modes6);
   sw->Stop(TStopwatch::BuildSubgraph);
-  printf("Total time taken creating sub-graph between modes 0 to 37: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+  printf("Total time taken creating sub-graph between modes 0 to 9: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
+  sw->Start(TStopwatch::BuildSubgraph);
+  G->BFSTraversalOneHop(startingVertices);
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken doing one-hop BFS traversal from an arbitray set of starting nodes: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
   sw->Start(TStopwatch::EstimateSizes);
   TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
@@ -250,6 +269,11 @@ void testImplementationB(const THash<TInt,TInt>& nodeToModeMapping,
     }
   }
 
+  TVec< TPair<TInt,TInt> > startingVertices = TVec< TPair<TInt,TInt> >();
+  for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
+    startingVertices.Add(GraphIdToNodeIdMapping.GetDat(*CurI));
+  }
+
   sw->Start(TStopwatch::LoadTables);
   for (THash<TInt,TVec<TPair<TInt,TInt> > >::TIter CurI = edgesProcessed.BegI(); CurI < edgesProcessed.EndI(); CurI++) {
     G->AddEdgeBatch(GraphIdToNodeIdMapping.GetDat(CurI.GetKey()), CurI.GetDat());
@@ -263,7 +287,7 @@ void testImplementationB(const THash<TInt,TInt>& nodeToModeMapping,
   TIntV Modes3 = TIntV(); Modes3.Add(0); Modes3.Add(1); Modes3.Add(2);
   TIntV Modes4 = TIntV(); Modes4.Add(5);
   TIntV Modes5 = TIntV(); Modes5.Add(0); Modes5.Add(1); Modes5.Add(4);
-  TIntV Modes6 = TIntV(); for (int i = 0; i < 38; i++) { Modes6.Add(i); }
+  TIntV Modes6 = TIntV(); for (int i = 0; i < 10; i++) { Modes6.Add(i); }
 
   sw->Start(TStopwatch::BuildSubgraph);
   G->GetSubGraphMocked(Modes1);
@@ -293,7 +317,12 @@ void testImplementationB(const THash<TInt,TInt>& nodeToModeMapping,
   sw->Start(TStopwatch::BuildSubgraph);
   G->GetSubGraphMocked(Modes6);
   sw->Stop(TStopwatch::BuildSubgraph);
-  printf("Total time taken creating sub-graph between modes 0 to 37: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+  printf("Total time taken creating sub-graph between modes 0 to 9: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
+  sw->Start(TStopwatch::BuildSubgraph);
+  G->BFSTraversalOneHop(startingVertices);
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken doing one-hop BFS traversal from an arbitray set of starting nodes: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
   sw->Start(TStopwatch::EstimateSizes);
   TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
@@ -344,7 +373,7 @@ void testImplementationB(const THash<TInt,TInt>& nodeToModeMapping,
     G->DelEdge(GraphIdToNodeIdMapping.GetDat(CurI->GetVal1()), GraphIdToNodeIdMapping.GetDat(CurI->GetVal2()));
   }
   sw->Stop(TStopwatch::RemoveEdges);
-  printf("Total time taken removing edges: %.2f seconds\n\n", sw->Last(TStopwatch::RemoveEdges));
+  printf("Total time taken removing edges: %.2f seconds\n", sw->Last(TStopwatch::RemoveEdges));
 
   sw->Start(TStopwatch::AddEdges);
   for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
@@ -388,6 +417,11 @@ void testImplementationC(const THash<TInt,TInt>& nodeToModeMapping,
     }
   }
 
+  TVec< TPair<TInt,TInt> > startingVertices = TVec< TPair<TInt,TInt> >();
+  for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
+    startingVertices.Add(GraphIdToNodeIdMapping.GetDat(*CurI));
+  }
+
   sw->Start(TStopwatch::LoadTables);
   for (THash<TInt,TVec<TPair<TInt,TInt> > >::TIter CurI = edgesProcessed.BegI(); CurI < edgesProcessed.EndI(); CurI++) {
     G->AddEdgeBatch(GraphIdToNodeIdMapping.GetDat(CurI.GetKey()), CurI.GetDat());
@@ -401,7 +435,7 @@ void testImplementationC(const THash<TInt,TInt>& nodeToModeMapping,
   TIntV Modes3 = TIntV(); Modes3.Add(0); Modes3.Add(1); Modes3.Add(2);
   TIntV Modes4 = TIntV(); Modes4.Add(5);
   TIntV Modes5 = TIntV(); Modes5.Add(0); Modes5.Add(1); Modes5.Add(4);
-  TIntV Modes6 = TIntV(); for (int i = 0; i < 38; i++) { Modes6.Add(i); }
+  TIntV Modes6 = TIntV(); for (int i = 0; i < 10; i++) { Modes6.Add(i); }
 
   sw->Start(TStopwatch::BuildSubgraph);
   G->GetSubGraphMocked(Modes1);
@@ -431,7 +465,12 @@ void testImplementationC(const THash<TInt,TInt>& nodeToModeMapping,
   sw->Start(TStopwatch::BuildSubgraph);
   G->GetSubGraphMocked(Modes6);
   sw->Stop(TStopwatch::BuildSubgraph);
-  printf("Total time taken creating sub-graph between modes 0 to 37: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+  printf("Total time taken creating sub-graph between modes 0 to 9: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
+  sw->Start(TStopwatch::BuildSubgraph);
+  G->BFSTraversalOneHop(startingVertices);
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken doing one-hop BFS traversal from an arbitray set of starting nodes: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
   sw->Start(TStopwatch::EstimateSizes);
   TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
@@ -482,7 +521,7 @@ void testImplementationC(const THash<TInt,TInt>& nodeToModeMapping,
     G->DelEdge(GraphIdToNodeIdMapping.GetDat(CurI->GetVal1()), GraphIdToNodeIdMapping.GetDat(CurI->GetVal2()));
   }
   sw->Stop(TStopwatch::RemoveEdges);
-  printf("Total time taken removing edges: %.2f seconds\n\n", sw->Last(TStopwatch::RemoveEdges));
+  printf("Total time taken removing edges: %.2f seconds\n", sw->Last(TStopwatch::RemoveEdges));
 
   sw->Start(TStopwatch::AddEdges);
   for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
@@ -526,6 +565,11 @@ void testImplementationBC(const THash<TInt,TInt>& nodeToModeMapping,
     }
   }
 
+  TVec< TPair<TInt,TInt> > startingVertices = TVec< TPair<TInt,TInt> >();
+  for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {
+    startingVertices.Add(GraphIdToNodeIdMapping.GetDat(*CurI));
+  }
+
   sw->Start(TStopwatch::LoadTables);
   for (THash<TInt,TVec<TPair<TInt,TInt> > >::TIter CurI = edgesProcessed.BegI(); CurI < edgesProcessed.EndI(); CurI++) {
     G->AddEdgeBatch(GraphIdToNodeIdMapping.GetDat(CurI.GetKey()), CurI.GetDat());
@@ -539,7 +583,7 @@ void testImplementationBC(const THash<TInt,TInt>& nodeToModeMapping,
   TIntV Modes3 = TIntV(); Modes3.Add(0); Modes3.Add(1); Modes3.Add(2);
   TIntV Modes4 = TIntV(); Modes4.Add(5);
   TIntV Modes5 = TIntV(); Modes5.Add(0); Modes5.Add(1); Modes5.Add(4);
-  TIntV Modes6 = TIntV(); for (int i = 0; i < 38; i++) { Modes6.Add(i); }
+  TIntV Modes6 = TIntV(); for (int i = 0; i < 10; i++) { Modes6.Add(i); }
 
   sw->Start(TStopwatch::BuildSubgraph);
   G->GetSubGraphMocked(Modes1);
@@ -569,7 +613,12 @@ void testImplementationBC(const THash<TInt,TInt>& nodeToModeMapping,
   sw->Start(TStopwatch::BuildSubgraph);
   G->GetSubGraphMocked(Modes6);
   sw->Stop(TStopwatch::BuildSubgraph);
-  printf("Total time taken creating sub-graph between modes 0 to 37: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+  printf("Total time taken creating sub-graph between modes 0 to 9: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
+  sw->Start(TStopwatch::BuildSubgraph);
+  G->BFSTraversalOneHop(startingVertices);
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken doing one-hop BFS traversal from an arbitray set of starting nodes: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
   sw->Start(TStopwatch::EstimateSizes);
   TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
@@ -620,7 +669,7 @@ void testImplementationBC(const THash<TInt,TInt>& nodeToModeMapping,
     G->DelEdge(GraphIdToNodeIdMapping.GetDat(CurI->GetVal1()), GraphIdToNodeIdMapping.GetDat(CurI->GetVal2()));
   }
   sw->Stop(TStopwatch::RemoveEdges);
-  printf("Total time taken removing edges: %.2f seconds\n\n", sw->Last(TStopwatch::RemoveEdges));
+  printf("Total time taken removing edges: %.2f seconds\n", sw->Last(TStopwatch::RemoveEdges));
 
   sw->Start(TStopwatch::AddEdges);
   for (TVec<TInt>::TIter CurI = verticesToBeDeleted.BegI(); CurI < verticesToBeDeleted.EndI(); CurI++) {

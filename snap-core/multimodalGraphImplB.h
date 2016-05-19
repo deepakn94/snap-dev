@@ -199,6 +199,7 @@ public:
   /// Transformation methods from multi-modal graph to regular, directed graph.
   TIntNNet GetSubGraph(const TIntV ModeIds) const;
   int GetSubGraphMocked(const TIntV ModeIds) const;
+  int BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& StartingVertices) const;
 
   /// Returns an ID of a random node in the graph.
   TPair<TInt,TInt> GetRndNId(TRnd& Rnd=TInt::Rnd) { int NId = NodeToModeMapping.GetKey(NodeToModeMapping.GetRndKeyId(Rnd, 0.8)); return TPair<TInt,TInt>(NodeToModeMapping[NId], NId); }

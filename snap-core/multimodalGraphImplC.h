@@ -193,6 +193,7 @@ public:
   /// Transformation methods from multi-modal graph to regular, directed graph.
   TIntNNet GetSubGraph(const TIntV ModeIds) const;
   int GetSubGraphMocked(const TIntV ModeIds) const;
+  int BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& StartingVertices) const;
 
   /// Returns an ID of a random node in the graph.
   int GetRndNId(TRnd& Rnd=TInt::Rnd);

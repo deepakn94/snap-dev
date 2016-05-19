@@ -270,6 +270,21 @@ int TMultimodalGraphImplB::GetSubGraphMocked(const TIntV ModeIds) const {
   return NumVerticesAndEdges;
 }
 
+int TMultimodalGraphImplB::BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& StartingVertices) const {
+  int NumVerticesAndEdges = 0;
+  for (int i = 0; i < StartingVertices.Len(); i++) {
+    TNodeI NI = GetNI(StartingVertices.GetVal(i));
+    TIntV AdjacentModes = TIntV(); NI.GetAdjacentModes(AdjacentModes);
+    for (int ModeIdx = 0; ModeIdx < AdjacentModes.Len(); ModeIdx++) {
+      int ModeId = AdjacentModes.GetVal(ModeIdx);
+      for (int e = 0; e < NI.GetOutDeg(ModeId); e++) {
+        NumVerticesAndEdges += NI.GetOutNId(e, ModeId);
+      }
+    }
+  }
+  return NumVerticesAndEdges;
+}
+
 PMultimodalGraphImplB TMultimodalGraphImplB::GetSmallGraph() {
   PMultimodalGraphImplB G = TMultimodalGraphImplB::New();
   TVec< TPair<TInt,TInt> > Nodes = TVec< TPair<TInt,TInt> >();

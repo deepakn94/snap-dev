@@ -189,6 +189,17 @@ int TMultimodalGraphImplC::GetSubGraphMocked(const TIntV ModeIds) const {
   return NumVerticesAndEdges;
 }
 
+int TMultimodalGraphImplC::BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& StartingVertices) const {
+  int NumVerticesAndEdges = 0;
+  for (int i = 0; i < StartingVertices.Len(); i++) {
+    TNodeI NI = GetNI(StartingVertices.GetVal(i));
+    for (int e = 0; e < NI.GetOutDeg(); e++) {
+      NumVerticesAndEdges += NI.GetOutNId(e).GetVal2();
+    }
+  }
+  return NumVerticesAndEdges;
+}
+
 PMultimodalGraphImplC TMultimodalGraphImplC::GetSmallGraph() {
   PMultimodalGraphImplC G = TMultimodalGraphImplC::New();
   TVec< TPair<TInt,TInt> > Nodes = TVec< TPair<TInt,TInt> >();
