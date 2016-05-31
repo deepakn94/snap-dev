@@ -12,9 +12,11 @@ void CreateGraphMapping(THash<TInt, TInt>& nodeToModeMapping,
                         TVec< TPair<TInt,TInt> >& edgesDstVertexToBeChecked,
                         TVec< TPair<TInt,TInt> >& extraEdgesToBeChecked) {
   int numModes = 10;
-  int numNodesPerMode = 10000;
+  int numNodesPerMode = 100000;
   int numNodes = numNodesPerMode * numModes;
-  long int numEdges = 0;
+  long int numEdges = 1000000000;
+  int numNodesWithEdges = numNodes;
+  int moduloFactor = numNodes / numNodesWithEdges;
 
   for (int i = 0; i < numNodesPerMode; i++) {
     for (int j = 0; j < numModes; j++) {
@@ -29,11 +31,10 @@ void CreateGraphMapping(THash<TInt, TInt>& nodeToModeMapping,
 
   for (int i = 0; i < numNodes; i++) {
     edges.AddDat(i);
-    // if (i % 10000 != 0) { edges.GetDat(i).Add((i+5) % numNodes); numEdges++; continue; }
-    int numEdgesPerNode = 10;
+    int numEdgesPerNode = numEdges / numNodesWithEdges;
+    if (i % moduloFactor != 0) { continue; }
     for (int j = 1; j <= numEdgesPerNode; j++) {
       edges.GetDat(i).Add((i+(j*(numNodes / numEdgesPerNode))) % numNodes);
-      numEdges++;
     }
     /* for (int j = 0; j < numAdditionalNodes; j++) {
       edges.GetDat(i).Add(numNodes+j);
@@ -175,6 +176,15 @@ void testImplementationA(const THash<TInt,TInt>& nodeToModeMapping,
   G->BFSTraversalOneHop(startingVertices);
   sw->Stop(TStopwatch::BuildSubgraph);
   printf("Total time taken doing one-hop BFS traversal from an arbitray set of starting nodes: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
+  sw->Start(TStopwatch::BuildSubgraph);
+  int WalkLength = 100000; int NumRandomWalks = 1000;
+  TIntV NodeIds = TIntV(WalkLength);
+  for (int i = 0; i < NumRandomWalks; i++) {
+    G->RandomWalk(NodeIds, WalkLength);
+  }
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken executing random walks: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
   sw->Start(TStopwatch::EstimateSizes);
   TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
@@ -324,6 +334,20 @@ void testImplementationB(const THash<TInt,TInt>& nodeToModeMapping,
   sw->Stop(TStopwatch::BuildSubgraph);
   printf("Total time taken doing one-hop BFS traversal from an arbitray set of starting nodes: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
+  sw->Start(TStopwatch::BuildSubgraph);
+  int WalkLength = 100000; int NumRandomWalks = 1000;
+  TVec< TPair<TInt,TInt> > NodeIds = TVec< TPair<TInt,TInt> >(WalkLength);
+  for (int i = 0; i < NumRandomWalks; i++) {
+    G->RandomWalk(NodeIds, WalkLength);
+  }
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken executing random walks: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
+  sw->Start(TStopwatch::BuildSubgraph);
+  G->ConvertToImplC();
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken converting from impl. B to impl. C: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
   sw->Start(TStopwatch::EstimateSizes);
   TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
   G->GetNodeIdsInMode(0, PerModeNodeIds);
@@ -472,6 +496,15 @@ void testImplementationC(const THash<TInt,TInt>& nodeToModeMapping,
   sw->Stop(TStopwatch::BuildSubgraph);
   printf("Total time taken doing one-hop BFS traversal from an arbitray set of starting nodes: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
+  sw->Start(TStopwatch::BuildSubgraph);
+  int WalkLength = 100000; int NumRandomWalks = 1000;
+  TVec< TPair<TInt,TInt> > NodeIds = TVec< TPair<TInt,TInt> >(WalkLength);
+  for (int i = 0; i < NumRandomWalks; i++) {
+    G->RandomWalk(NodeIds, WalkLength);
+  }
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken executing random walks: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
   sw->Start(TStopwatch::EstimateSizes);
   TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();
   G->GetNodeIdsInMode(0, PerModeNodeIds);
@@ -619,6 +652,15 @@ void testImplementationBC(const THash<TInt,TInt>& nodeToModeMapping,
   G->BFSTraversalOneHop(startingVertices);
   sw->Stop(TStopwatch::BuildSubgraph);
   printf("Total time taken doing one-hop BFS traversal from an arbitray set of starting nodes: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
+
+  sw->Start(TStopwatch::BuildSubgraph);
+  int WalkLength = 100000; int NumRandomWalks = 1000;
+  TVec< TPair<TInt,TInt> > NodeIds = TVec< TPair<TInt,TInt> >(WalkLength);
+  for (int i = 0; i < NumRandomWalks; i++) {
+    G->RandomWalk(NodeIds, WalkLength);
+  }
+  sw->Stop(TStopwatch::BuildSubgraph);
+  printf("Total time taken executing random walks: %.2f seconds\n", sw->Last(TStopwatch::BuildSubgraph));
 
   sw->Start(TStopwatch::EstimateSizes);
   TVec< TPair<TInt,TInt> > PerModeNodeIds = TVec< TPair<TInt,TInt> >();

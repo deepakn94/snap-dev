@@ -1,5 +1,6 @@
 /////////////////////////////////////////////////
 // Multi-modal Graph, Impl A
+
 TPair<TInt,TInt> TMultimodalGraphImplA::AddNode(const int ModeId) {
   int LocalNId = MxNId;
   MxNId++;
@@ -108,6 +109,18 @@ int TMultimodalGraphImplA::BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& St
     }
   }
   return NumVerticesAndEdges;
+}
+
+void TMultimodalGraphImplA::RandomWalk(TVec<TInt> NodeIds, int WalkLength) {
+  int CurrentNodeId = Network.GetRndNId();
+  int NodeIdIdx = 0;
+  NodeIds.Add(NodeIdIdx++, CurrentNodeId);
+  while (NodeIds.Len() < WalkLength) {
+    TIntNNet::TNodeI NI = Network.GetNI(CurrentNodeId);
+    int EdgeId = TInt::Rnd.GetUniDevInt(NI.GetOutDeg());
+    CurrentNodeId = NI.GetOutNId(EdgeId);
+    NodeIds.SetVal(NodeIdIdx++, CurrentNodeId);
+  }
 }
 
 PMultimodalGraphImplA TMultimodalGraphImplA::GetSmallGraph() {

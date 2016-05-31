@@ -19,10 +19,10 @@
 #include "graph.h"           // graphs
 #include "graphmp.h"         // graphs
 #include "network.h"         // networks
-#include "multimodalGraphImplA.h" // multi-modal graphs, impl A
-#include "multimodalGraphImplB.h" // multi-modal graphs, impl B
-#include "multimodalGraphImplC.h" // multi-modal graphs, impl C
-#include "multimodalGraphImplBC.h"// multi-modal graphs, impl BC (hybrid)
+#include "multimodalGraphImplA.h"
+#include "multimodalGraphImplB.h"
+#include "multimodalGraphImplC.h"
+#include "multimodalGraphImplBC.h"
 //#include "mmgraph.h"         // multimodal graphs
 #include "networkmp.h"       // networks OMP
 #include "bignet.h"          // large networks

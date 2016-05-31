@@ -3,9 +3,14 @@
 /// Single graph with all nodes [with global ids], each node labelled
 /// with appropriate attribute
 
+#ifndef MULTIMODAL_GRAPH_IMPLC_H
+#define MULTIMODAL_GRAPH_IMPLC_H
+
+class TMultimodalGraphImplB;
 class TMultimodalGraphImplC;
 
 /// Pointer to a multimodal graph
+typedef TPt<TMultimodalGraphImplB> PMultimodalGraphImplB;
 typedef TPt<TMultimodalGraphImplC> PMultimodalGraphImplC;
 
 //#//////////////////////////////////////////////
@@ -179,6 +184,8 @@ public:
   /// Adds an edge between node IDs SrcNId and DstNId to the graph. ##TUNGraph::AddEdge
   int AddEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   void AddEdgeBatch(const TPair<TInt,TInt>& SrcNId, const TVec<TPair<TInt,TInt> >& DstNIds);
+  void AddOutNIds(const TPair<TInt,TInt>& SrcNId, const TVec<TInt>& OutNIds, const int& OutModeId);
+  void AddInNIds(const TPair<TInt,TInt>& SrcNId, const TVec<TInt>& InNIds, const int& InModeId);
   /// Deletes an edge between node IDs SrcNId and DstNId from the graph. ##TUNGraph::DelEdge
   void DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId);
   /// Tests whether an edge between node IDs SrcNId and DstNId exists in the graph.
@@ -194,6 +201,8 @@ public:
   TIntNNet GetSubGraph(const TIntV ModeIds) const;
   int GetSubGraphMocked(const TIntV ModeIds) const;
   int BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& StartingVertices) const;
+  void RandomWalk(TVec< TPair<TInt,TInt> > NodeIds, int WalkLength);
+  PMultimodalGraphImplB ConvertToImplB() const;
 
   /// Returns an ID of a random node in the graph.
   int GetRndNId(TRnd& Rnd=TInt::Rnd);
@@ -211,6 +220,10 @@ public:
   void ReserveOutNIdV(const TPair<TInt,TInt>& NId, const int& Size) {
     NodeH.GetDat(NId.GetVal1()).GetDat(NId.GetVal2()).OutNIdV.Reserve(Size);
   }
+  void ReserveInAndOutNIdV(const TPair<TInt,TInt>& NId, const int& OutSize, const int& InSize) {
+    NodeH.GetDat(NId.GetVal1()).GetDat(NId.GetVal2()).OutNIdV.Reserve(OutSize);
+    NodeH.GetDat(NId.GetVal1()).GetDat(NId.GetVal2()).InNIdV.Reserve(InSize);
+  }
   /// Defragments the graph. ##TUNGraph::Defrag
   void Defrag(const bool& OnlyNodeLinks=false);
   /// Checks the graph data structure for internal consistency. ##TUNGraph::IsOk
@@ -218,3 +231,5 @@ public:
   /// Returns a small graph on 10 nodes and 10 edges with 2 modes. ##TUNGraph::GetSmallGraph
   static PMultimodalGraphImplC GetSmallGraph();
 };
+
+#endif

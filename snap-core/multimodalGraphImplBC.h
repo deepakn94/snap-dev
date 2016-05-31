@@ -3,6 +3,9 @@
 /// Single graph with all nodes [with global ids], each node labelled
 /// with appropriate attribute
 
+#ifndef MULTIMODAL_GRAPH_IMPLBC_H
+#define MULTIMODAL_GRAPH_IMPLBC_H
+
 class TMultimodalGraphImplBC;
 
 /// Pointer to a multimodal graph
@@ -246,6 +249,7 @@ public:
   TIntNNet GetSubGraph(const TIntV ModeIds) const;
   int GetSubGraphMocked(const TIntV ModeIds) const;
   int BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& StartingVertices) const;
+  void RandomWalk(TVec< TPair<TInt,TInt> > NodeIds, int WalkLength);
 
   /// Returns an ID of a random node in the graph.
   int GetRndNId(TRnd& Rnd=TInt::Rnd);
@@ -267,3 +271,5 @@ public:
   /// Returns a small graph on 10 nodes and 10 edges with 2 modes. ##TUNGraph::GetSmallGraph
   static PMultimodalGraphImplBC GetSmallGraph();
 };
+
+#endif

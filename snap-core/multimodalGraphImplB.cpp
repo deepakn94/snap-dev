@@ -285,6 +285,47 @@ int TMultimodalGraphImplB::BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& St
   return NumVerticesAndEdges;
 }
 
+void TMultimodalGraphImplB::RandomWalk(TVec< TPair<TInt,TInt> > NodeIds, int WalkLength) {
+  int CurrentLocalNodeId = NodeToModeMapping.GetKey(NodeToModeMapping.GetRndKeyId(TInt::Rnd));
+  TPair<TInt,TInt> CurrentNodeId = TPair<TInt,TInt>(NodeToModeMapping.GetDat(CurrentLocalNodeId), CurrentLocalNodeId);
+  int NodeIdIdx = 0;
+  NodeIds.SetVal(NodeIdIdx++, CurrentNodeId);
+  while (NodeIds.Len() < WalkLength) {
+    TNodeI NI = GetNI(CurrentNodeId);
+    TIntV AdjacentModes = TIntV(); NI.GetAdjacentModes(AdjacentModes);
+    // Throw an appropriately biased coin here
+    int EdgeId = TInt::Rnd.GetUniDevInt(NI.GetOutDeg());
+    int i;
+    for (i = 0; i < AdjacentModes.Len(); i++) {
+      int ModeOutDeg = NI.GetOutDeg(AdjacentModes.GetDat(i));
+      if (EdgeId < ModeOutDeg) { break; }
+      EdgeId -= ModeOutDeg;
+    }
+    NodeIds.SetVal(NodeIdIdx++, TPair<TInt,TInt>(AdjacentModes.GetDat(i), NI.GetOutNId(EdgeId, AdjacentModes.GetDat(i))));
+  }
+}
+
+PMultimodalGraphImplC TMultimodalGraphImplB::ConvertToImplC() const {
+  PMultimodalGraphImplC G = TMultimodalGraphImplC::New();
+  for (TNodeI NI = BegNI(); NI < EndNI(); NI++) {
+    G->AddNode(TPair<TInt,TInt>(NI.GetModeId(), NI.GetId()));
+  }
+
+  for (TNodeI NI = BegNI(); NI < EndNI(); NI++) {
+    int OutDeg = NI.GetOutDeg();
+    int InDeg = NI.GetInDeg();
+    G->ReserveInAndOutNIdV(TPair<TInt,TInt>(NI.GetModeId(), NI.GetId()), OutDeg, InDeg);
+    TVec<TInt> AdjacentModes = TVec<TInt>(); NI.GetAdjacentModes(AdjacentModes);
+    for (int i = 0; i < AdjacentModes.Len(); i++) {
+      int AdjacentMode = AdjacentModes.GetVal(i);
+      TPair<TInt,TInt> ModeIdsKey = GetModeIdsKey(NI.GetModeId(), AdjacentMode);
+      G->AddOutNIds(TPair<TInt,TInt>(NI.GetModeId(),NI.GetId()), Graphs.GetDat(ModeIdsKey).GetOutNId(NI.GetId()), AdjacentMode);
+      G->AddInNIds(TPair<TInt,TInt>(NI.GetModeId(),NI.GetId()), Graphs.GetDat(ModeIdsKey).GetInNId(NI.GetId()), AdjacentMode);
+    }
+  }
+  return G;
+}
+
 PMultimodalGraphImplB TMultimodalGraphImplB::GetSmallGraph() {
   PMultimodalGraphImplB G = TMultimodalGraphImplB::New();
   TVec< TPair<TInt,TInt> > Nodes = TVec< TPair<TInt,TInt> >();

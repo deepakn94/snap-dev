@@ -1,6 +1,8 @@
 /////////////////////////////////////////////////
 // Multi-modal Graph, Impl C
 
+#include "multimodalGraphImplC.h"
+
 int TMultimodalGraphImplC::GetNodes() const {
   int NumNodes = 0;
   for (TNodeH::TIter Node=NodeH.BegI(); Node<NodeH.EndI(); Node++) {
@@ -101,6 +103,28 @@ void TMultimodalGraphImplC::AddEdgeBatch(const TPair<TInt,TInt>& SrcNId, const T
   }
 }
 
+void TMultimodalGraphImplC::AddOutNIds(const TPair<TInt,TInt>& SrcNId, const TVec<TInt>& OutNIds, const int& OutModeId) {
+  IAssertR(IsNode(SrcNId), TStr::Fmt("(%d,%d) not a node.", SrcNId.GetVal1(), SrcNId.GetVal2()).CStr());
+
+  int SrcModeId = SrcNId.GetVal1();
+  int SrcLocalNId = SrcNId.GetVal2();
+
+  for (TVec<TInt>::TIter OutNId = OutNIds.BegI(); OutNId < OutNIds.EndI(); OutNId++) {
+    NodeH.GetDat(SrcModeId).GetDat(SrcLocalNId).OutNIdV.AddSorted(TPair<TInt,TInt>(OutModeId, *OutNId));
+  }
+}
+
+void TMultimodalGraphImplC::AddInNIds(const TPair<TInt,TInt>& SrcNId, const TVec<TInt>& InNIds, const int& InModeId) {
+  IAssertR(IsNode(SrcNId), TStr::Fmt("(%d,%d) not a node.", SrcNId.GetVal1(), SrcNId.GetVal2()).CStr());
+
+  int SrcModeId = SrcNId.GetVal1();
+  int SrcLocalNId = SrcNId.GetVal2();
+
+  for (TVec<TInt>::TIter InNId = InNIds.BegI(); InNId < InNIds.EndI(); InNId++) {
+    NodeH.GetDat(SrcModeId).GetDat(SrcLocalNId).InNIdV.AddSorted(TPair<TInt,TInt>(InModeId, *InNId));
+  }
+}
+
 void TMultimodalGraphImplC::DelEdge(const TPair<TInt,TInt>& SrcNId, const TPair<TInt,TInt>& DstNId) {
   IAssertR(IsNode(SrcNId) && IsNode(DstNId), TStr::Fmt("(%d,%s) or (%d,%d) not a node.", SrcNId.GetVal1(), SrcNId.GetVal2(), DstNId.GetVal1(), DstNId.GetVal2()).CStr());
   if (!IsEdge(SrcNId, DstNId)) {
@@ -198,6 +222,32 @@ int TMultimodalGraphImplC::BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& St
     }
   }
   return NumVerticesAndEdges;
+}
+
+void TMultimodalGraphImplC::RandomWalk(TVec< TPair<TInt,TInt> > NodeIds, int WalkLength) {
+  int CurrentModeId = NodeH.GetKey(NodeH.GetRndKeyId(TInt::Rnd));
+  int CurrentLocalNodeId = NodeH.GetDat(CurrentModeId).GetKey(NodeH.GetDat(CurrentModeId).GetRndKeyId(TInt::Rnd));
+  TPair<TInt,TInt> CurrentNodeId = TPair<TInt,TInt>(CurrentModeId, CurrentLocalNodeId);
+  int NodeIdIdx = 0;
+  NodeIds.SetVal(NodeIdIdx++, CurrentNodeId);
+  while (NodeIds.Len() < WalkLength) {
+    TNodeI NI = GetNI(CurrentNodeId);
+    int EdgeId = TInt::Rnd.GetUniDevInt(NI.GetOutDeg());
+    CurrentNodeId = NI.GetOutNId(EdgeId);
+    NodeIds.SetVal(NodeIdIdx++, CurrentNodeId);
+  }
+}
+
+PMultimodalGraphImplB TMultimodalGraphImplC::ConvertToImplB() const {
+  PMultimodalGraphImplB G = TMultimodalGraphImplB::New();
+  for (TNodeI NI = BegNI(); NI < EndNI(); NI++) {
+    G->AddNode(NI.GetId());
+  }
+
+  for (TNodeI NI = BegNI(); NI < EndNI(); NI++) {
+    // TODO: Fix this, make it possible to get all adjacent node ids in a particular mode
+  }
+  return G;
 }
 
 PMultimodalGraphImplC TMultimodalGraphImplC::GetSmallGraph() {

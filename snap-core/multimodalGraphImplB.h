@@ -2,10 +2,15 @@
 /// Multimodal graph: Implementation B
 /// k(k+1)/2 graphs between the same set of vertices
 
+#ifndef MULTIMODAL_GRAPH_IMPLB_H
+#define MULTIMODAL_GRAPH_IMPLB_H
+
 class TMultimodalGraphImplB;
+class TMultimodalGraphImplC;
 
 /// Pointer to a multimodal graph
 typedef TPt<TMultimodalGraphImplB> PMultimodalGraphImplB;
+typedef TPt<TMultimodalGraphImplC> PMultimodalGraphImplC;
 typedef THash<TPair<TInt,TInt>, TNGraph> TGraphs;
 typedef TNGraph::TNode TNode;
 
@@ -46,6 +51,7 @@ public:
     bool operator == (const TNodeI& NodeI) const { return NodeHI == NodeI.NodeHI; }
     /// Returns ID of the current node.
     int GetId() const { return NodeHI.GetKey(); }
+    int GetModeId() const { return NodeHI.GetDat(); }
     /// Returns degree of the current node, the sum of in-degree and out-degree.
     int GetDeg() const { return GetInDeg() + GetOutDeg(); }
     /// Returns in-degree of the current node.
@@ -200,6 +206,8 @@ public:
   TIntNNet GetSubGraph(const TIntV ModeIds) const;
   int GetSubGraphMocked(const TIntV ModeIds) const;
   int BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& StartingVertices) const;
+  void RandomWalk(TVec< TPair<TInt,TInt> > NodeIds, int WalkLength);
+  PMultimodalGraphImplC ConvertToImplC() const;
 
   /// Returns an ID of a random node in the graph.
   TPair<TInt,TInt> GetRndNId(TRnd& Rnd=TInt::Rnd) { int NId = NodeToModeMapping.GetKey(NodeToModeMapping.GetRndKeyId(Rnd, 0.8)); return TPair<TInt,TInt>(NodeToModeMapping[NId], NId); }
@@ -221,3 +229,5 @@ public:
   /// Returns a small graph on 10 nodes and 10 edges with 2 modes. ##TMultimodalGraphImplB::GetSmallGraph
   static PMultimodalGraphImplB GetSmallGraph();
 };
+
+#endif

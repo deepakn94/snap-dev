@@ -247,6 +247,8 @@ public:
     int GetOutDeg() const { return OutNIdV.Len(); }
     int GetInNId(const int& NodeN) const { return InNIdV[NodeN]; }
     int GetOutNId(const int& NodeN) const { return OutNIdV[NodeN]; }
+    const TIntV& GetOutNId() const { return OutNIdV; }
+    const TIntV& GetInNId() const { return InNIdV; }
     int GetNbrNId(const int& NodeN) const { return NodeN<GetOutDeg()?GetOutNId(NodeN):GetInNId(NodeN-GetOutDeg()); }
     bool IsInNId(const int& NId) const { return InNIdV.SearchBin(NId) != -1; }
     bool IsOutNId(const int& NId) const { return OutNIdV.SearchBin(NId) != -1; }
@@ -368,6 +370,9 @@ public:
   void DelNode(const TNode& NodeI) { DelNode(NodeI.GetId()); }
   /// Tests whether ID NId is a node.
   bool IsNode(const int& NId) const { return NodeH.IsKey(NId); }
+  /// Methods to access adjacency lists directly
+  const TIntV& GetOutNId(const int& NId) const { return NodeH.GetDat(NId).GetOutNId(); }
+  const TIntV& GetInNId(const int& NId) const { return NodeH.GetDat(NId).GetInNId(); }
   /// Returns an iterator referring to the first node in the graph.
   TNodeI BegNI() const { return TNodeI(NodeH.BegI()); }
   /// Returns an iterator referring to the past-the-end node in the graph.

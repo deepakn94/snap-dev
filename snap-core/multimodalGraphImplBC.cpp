@@ -1,5 +1,7 @@
 /////////////////////////////////////////////////
-// Multi-modal Graph, Impl C
+// Multi-modal Graph, Impl BC
+
+#include "multimodalGraphImplBC.h"
 
 int TMultimodalGraphImplBC::TNodeI::GetInDeg() const {
   int InDeg = 0;
@@ -240,6 +242,27 @@ int TMultimodalGraphImplBC::BFSTraversalOneHop(const TVec< TPair<TInt,TInt> >& S
     }
   }
   return NumVerticesAndEdges;
+}
+
+void TMultimodalGraphImplBC::RandomWalk(TVec< TPair<TInt,TInt> > NodeIds, int WalkLength) {
+  int CurrentModeId = NodeH.GetKey(NodeH.GetRndKeyId(TInt::Rnd));
+  int CurrentLocalNodeId = NodeH.GetDat(CurrentModeId).GetKey(NodeH.GetDat(CurrentModeId).GetRndKeyId(TInt::Rnd));
+  TPair<TInt,TInt> CurrentNodeId = TPair<TInt,TInt>(CurrentModeId, CurrentLocalNodeId);
+  int NodeIdIdx = 0;
+  NodeIds.SetVal(NodeIdIdx++, CurrentNodeId);
+  while (NodeIds.Len() < WalkLength) {
+    TNodeI NI = GetNI(CurrentNodeId);
+    TIntV AdjacentModes = TIntV(); NI.GetAdjacentModes(AdjacentModes);
+    // Throw an appropriately biased coin here
+    int EdgeId = TInt::Rnd.GetUniDevInt(NI.GetOutDeg());
+    int i;
+    for (i = 0; i < AdjacentModes.Len(); i++) {
+      int ModeOutDeg = NI.GetOutDeg(AdjacentModes.GetDat(i));
+      if (EdgeId < ModeOutDeg) { break; }
+      EdgeId -= ModeOutDeg;
+    }
+    NodeIds.SetVal(NodeIdIdx++, TPair<TInt,TInt>(AdjacentModes.GetDat(i), NI.GetOutNId(EdgeId, AdjacentModes.GetDat(i))));
+  }
 }
 
 PMultimodalGraphImplBC TMultimodalGraphImplBC::GetSmallGraph() {
